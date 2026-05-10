@@ -1,0 +1,144 @@
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.view-section {
+    display: none;
+}
+.view-section.active {
+    display: block;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8; 
+}
+
+/* Estilos de Impresión */
+@media print {
+    body {
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+    }
+    /* Ocultar la aplicación web */
+    aside, main, header, .view-section, .fixed {
+        display: none !important;
+    }
+    /* Forzar mostrar la factura */
+    #print-factura {
+        display: block !important;
+        position: relative !important;
+        visibility: visible !important;
+        width: 100% !important;
+    }
+    @page { margin: 1cm; size: A4 portrait; }
+}
+
+/* Estilo Intercalado (Zebra) para todas las tablas, excepto la grilla de carga de ventas */
+tbody tr:not(.fila-detalle):nth-child(even) {
+    background-color: #f9fafb !important; /* gray-50 */
+}
+
+tbody tr:not(.fila-detalle):nth-child(odd) {
+    background-color: #ffffff !important;
+}
+
+/* Efecto hover mejorado para filas (excepto grilla de carga) */
+tbody tr:not(.fila-detalle):hover {
+    background-color: #f3f4f6 !important; /* gray-100 */
+}
+
+/* Tablas responsivas en móviles (estilo "Cards") */
+@media (max-width: 768px) {
+    .responsive-table-wrapper {
+        overflow-x: hidden !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .responsive-table-wrapper table,
+    .responsive-table-wrapper tbody {
+        display: block;
+        width: 100%;
+    }
+    .responsive-table-wrapper thead {
+        display: none;
+    }
+    .responsive-table-wrapper tr {
+        display: block;
+        margin-bottom: 1rem;
+        background-color: white !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 0.75rem;
+        padding: 0.5rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    .responsive-table-wrapper td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0.5rem !important;
+        border-bottom: 1px solid #f3f4f6 !important;
+        text-align: right !important;
+    }
+    .responsive-table-wrapper td:last-child {
+        border-bottom: none !important;
+    }
+    .responsive-table-wrapper td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        text-align: left;
+        margin-right: 1rem;
+    }
+    /* El lote en móviles ocupa todo el ancho para nombres largos */
+    .responsive-table-wrapper td.cell-lote {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .responsive-table-wrapper td.cell-lote::before {
+        margin-bottom: 0.25rem;
+    }
+    /* Para filas de "Cargando..." o "Sin datos" que usan colspan */
+    .responsive-table-wrapper td[colspan] {
+        display: block;
+        text-align: center !important;
+    }
+    .responsive-table-wrapper td[colspan]::before {
+        display: none;
+    }
+}
+
+/* Estilo para filas inválidas (errores de stock o datos faltantes) */
+.row-invalid {
+    background-color: #fff1f2 !important; /* bg-rose-50 */
+    border-left: 4px solid #f43f5e !important; /* border-rose-500 */
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .responsive-table-wrapper tr.row-invalid {
+        border: 2px solid #f43f5e !important;
+        background-color: #fff1f2 !important;
+    }
+}

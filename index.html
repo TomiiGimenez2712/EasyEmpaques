@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyEmpaques</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+        
+    </script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar Overlay (for mobile) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-40 hidden md:hidden"
+        onclick="app.toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="app-sidebar"
+        class="w-64 bg-white shadow-lg flex flex-col fixed inset-y-0 left-0 z-50 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex-shrink-0">
+        <div class="h-16 flex items-center justify-center border-b border-gray-100">
+            <h1 class="text-xl font-bold text-brand-600 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                EasyEmpaques
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="#"
+                class="nav-link active flex items-center gap-3 px-4 py-3 rounded-lg text-brand-600 bg-brand-50 transition-colors"
+                data-view="dashboard">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#"
+                class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                data-view="lotes">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                </svg>
+                <span>Lotes (Ingresos)</span>
+            </a>
+            <a href="#"
+                class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                data-view="ventas">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Ventas & Prorrateo</span>
+            </a>
+            <a href="#"
+                class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                data-view="liquidaciones">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Liquidaciones</span>
+            </a>
+            <a href="#"
+                class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                data-view="ganancias">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <span>Ganancias (Reportes)</span>
+            </a>
+            <a href="#"
+                class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                data-view="cuentas">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Estado de Cuenta</span>
+            </a>
+
+            <div class="pt-6 pb-2">
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Catálogos</p>
+            </div>
+            <a href="#"
+                class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                data-view="quinteros">
+                Quinteros
+            </a>
+            <a href="#"
+                class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                data-view="clientes">
+                Clientes (Puesteros)
+            </a>
+            <a href="#"
+                class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                data-view="gastos">
+                Gastos Fijos
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <!-- Header Mobile / Top bar -->
+        <header class="md:hidden h-16 bg-white shadow-sm flex items-center px-4 sm:px-6 justify-between z-30 relative shrink-0">
+            <div class="flex items-center gap-2">
+                <button onclick="app.toggleSidebar()"
+                    class="text-gray-500 hover:text-brand-600 focus:outline-none p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h1 class="text-lg font-bold text-brand-600">EasyEmpaques</h1>
+            </div>
+        </header>
+
+        <!-- Dynamic View Container -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 relative" id="app-container">
+            <!-- Vista: Ganancias -->
+            <div id="view-ganancias" class="view-section animate-fade-in pb-20 md:pb-0">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Reporte de Ganancias</h2>
+                        <p class="text-sm text-gray-500">Beneficio neto del empaque por lote liquidado</p>
+                    </div>
+                    <select id="ganancias-filtro" onchange="if(typeof ganancias !== 'undefined') ganancias.cargarDatos()" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                        <option value="hoy">Hoy</option>
+                        <option value="7">Últimos 7 días</option>
+                        <option value="30" selected>Últimos 30 días</option>
+                        <option value="mes">Este mes</option>
+                        <option value="todos">Todos los tiempos</option>
+                    </select>
+                </div>
+
+                <!-- Resumen Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
+                        <span class="text-sm text-gray-500 font-medium mb-1">Ganancia Total</span>
+                        <span class="text-3xl font-bold text-green-600" id="ganancias-total-label">$0</span>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
+                        <span class="text-sm text-gray-500 font-medium mb-1">Lotes Liquidados</span>
+                        <span class="text-3xl font-bold text-brand-600" id="ganancias-lotes-label">0</span>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
+                        <span class="text-sm text-gray-500 font-medium mb-1">Promedio por Lote</span>
+                        <span class="text-3xl font-bold text-blue-600" id="ganancias-promedio-label">$0</span>
+                    </div>
+                </div>
+
+                <!-- Gráfico -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Evolución de Ganancias</h3>
+                    <div class="w-full h-64">
+                        <canvas id="gananciasChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Desglose por Lote -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-[300px]">
+                    <div class="p-4 border-b border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-800">Desglose por Lote</h3>
+                    </div>
+                    <div class="flex-1 overflow-y-auto responsive-table-wrapper p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                    <th class="px-4 py-3 font-medium rounded-tl-lg">Lote / Fecha</th>
+                                    <th class="px-4 py-3 font-medium">Producto</th>
+                                    <th class="px-4 py-3 font-medium">Quintero</th>
+                                    <th class="px-4 py-3 font-medium text-right">Ingresos Brutos</th>
+                                    <th class="px-4 py-3 font-medium text-right">Pagado a Quintero</th>
+                                    <th class="px-4 py-3 font-medium text-right text-green-700 bg-green-50 rounded-tr-lg">Ganancia Empaque</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-ganancias" class="divide-y divide-gray-100 text-sm">
+                                <!-- Filas de ganancias -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard View (Stock y Cuentas Corrientes) -->
+            <div id="view-dashboard" class="view-section active animate-fade-in pb-20 md:pb-0">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Dashboard General</h2>
+
+                <!-- Fila Superior: Stock Físico -->
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm mb-6">
+                    <div class="p-4 border-b border-gray-100 bg-blue-50 rounded-t-xl flex justify-between items-center">
+                        <h3 class="font-bold text-blue-800">Stock Físico Consolidado (Bultos Nativos)</h3>
+                    </div>
+                    <div class="p-4 responsive-table-wrapper">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="text-gray-500 border-b border-gray-200">
+                                    <th class="py-2 px-2">Producto</th>
+                                    <th class="py-2 px-2 text-center">Envase</th>
+                                    <th class="py-2 px-2 text-right">Cantidad Disponible</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-stock-general" class="divide-y divide-gray-100">
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-gray-400">Calculando stock...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Fila Inferior: Cuentas Corrientes -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Columna Izquierda: Quinteros (A Pagar) -->
+                    <div
+                        class="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col h-auto max-h-[60vh] lg:h-[70vh]">
+                        <div
+                            class="p-4 border-b border-gray-100 bg-red-50 rounded-t-xl flex justify-between items-center">
+                            <h3 class="font-bold text-red-800">Saldos a Pagar (Quinteros)</h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 responsive-table-wrapper">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="text-gray-500 border-b border-gray-200">
+                                        <th class="py-2">Quintero</th>
+                                        <th class="py-2 text-right">Saldo Deudor</th>
+                                        <th class="py-2 text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-saldos-quinteros" class="divide-y divide-gray-100">
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-gray-400">Cargando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Clientes (A Cobrar) -->
+                    <div
+                        class="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col h-auto max-h-[60vh] lg:h-[70vh]">
+                        <div
+                            class="p-4 border-b border-gray-100 bg-green-50 rounded-t-xl flex justify-between items-center">
+                            <h3 class="font-bold text-green-800">Saldos a Cobrar (Puesteros)</h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 responsive-table-wrapper">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="text-gray-500 border-b border-gray-200">
+                                        <th class="py-2">Cliente</th>
+                                        <th class="py-2 text-right">Saldo a Favor</th>
+                                        <th class="py-2 text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-saldos-clientes" class="divide-y divide-gray-100">
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-gray-400">Cargando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lotes View -->
+            <div id="view-lotes" class="view-section animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Lotes de Ingreso</h2>
+                    <button onclick="lotes.openLoteModal()"
+                        class="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition shadow-sm font-medium">
+                        + Nuevo Lote
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm responsive-table-wrapper">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+                                <th class="px-6 py-4 font-medium">Lote ID</th>
+                                <th class="px-6 py-4 font-medium">Fecha</th>
+                                <th class="px-6 py-4 font-medium">Quintero</th>
+                                <th class="px-6 py-4 font-medium">Producto</th>
+                                <th class="px-6 py-4 font-medium">Rasos</th>
+                                <th class="px-6 py-4 font-medium">Toritos (Obt)</th>
+                                <th class="px-6 py-4 font-medium">Estado</th>
+                                <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-lotes" class="divide-y divide-gray-100">
+                            <!-- Lotes will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Ventas View -->
+            <div id="view-ventas" class="view-section animate-fade-in">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Ventas & Prorrateo</h2>
+                </div>
+
+                <div class="mb-6 border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button id="tab-venta-nueva"
+                            class="border-brand-500 text-brand-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition"
+                            onclick="ventas.switchTab('nueva')">Nueva Venta</button>
+                        <button id="tab-venta-historial"
+                            class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition"
+                            onclick="ventas.switchTab('historial')">Historial de Ventas</button>
+                    </nav>
+                </div>
+
+                <div id="venta-sec-nueva" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Configuración de Venta -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-1">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Datos del Comprobante</h3>
+                        <form id="form-venta-header" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                                <input type="date" id="venta-fecha" required
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cliente (Puestero)</label>
+                                <select id="venta-cliente" required
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                                    <option value="">Seleccione...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Gastos Flete/Bajada
+                                    ($)</label>
+                                <input type="number" id="venta-gastos" required min="0" value="0"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                            </div>
+                        </form>
+
+                        <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <h4 class="text-sm font-bold text-gray-600 mb-2 uppercase tracking-wider">Resumen</h4>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-500">Total Bruto:</span>
+                                <span class="font-bold text-gray-800" id="resumen-bruto">$0.00</span>
+                            </div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-500">Descuentos Flete:</span>
+                                <span class="font-bold text-red-500" id="resumen-gastos">-$0.00</span>
+                            </div>
+                            <div class="flex justify-between mt-2 pt-2 border-t border-gray-200">
+                                <span class="font-bold text-gray-800">Total Neto:</span>
+                                <span class="font-bold text-green-600 text-lg" id="resumen-neto">$0.00</span>
+                            </div>
+                        </div>
+
+                        <button onclick="ventas.guardarVenta()" id="btn-guardar-venta"
+                            class="w-full mt-6 bg-brand-600 text-white px-4 py-3 rounded-lg hover:bg-brand-700 transition shadow-sm font-bold disabled:opacity-50">
+                            Confirmar Venta
+                        </button>
+                    </div>
+
+                    <!-- Detalle de Venta -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg font-bold text-gray-800">Artículos Vendidos</h3>
+                        </div>
+
+                        <div class="flex-1 responsive-table-wrapper">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                        <th class="px-4 py-3 font-medium rounded-tl-lg">Lote</th>
+                                        <th class="px-4 py-3 font-medium">Producto</th>
+                                        <th class="px-4 py-3 font-medium">Calibre</th>
+                                        <th class="px-4 py-3 font-medium">Envase</th>
+                                        <th class="px-4 py-3 font-medium w-20">Cant.</th>
+                                        <th class="px-4 py-3 font-medium">Precio Bruto c/u</th>
+                                        <th class="px-4 py-3 font-medium bg-green-50 text-green-800">Neto c/u (Calc)
+                                        </th>
+                                        <th class="px-4 py-3 font-medium rounded-tr-lg w-10"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-venta-detalles" class="divide-y divide-gray-100 text-sm">
+                                    <!-- Dynamic rows added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4">
+                            <button onclick="ventas.agregarFilaExtra()"
+                                class="text-sm bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-50 transition font-medium shadow-sm flex items-center gap-2">
+                                <span class="material-symbols-rounded text-base font-bold">add</span>
+                                Agregar Artículo Manual
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="venta-sec-historial" class="hidden">
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm responsive-table-wrapper">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-4 font-medium">Nº Comp.</th>
+                                    <th class="px-6 py-4 font-medium">Fecha</th>
+                                    <th class="px-6 py-4 font-medium">Cliente</th>
+                                    <th class="px-6 py-4 font-medium text-right">Total Neto</th>
+                                    <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-historial-ventas" class="divide-y divide-gray-100">
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-gray-400">Cargando historial de
+                                        ventas...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liquidaciones View -->
+            <div id="view-liquidaciones" class="view-section animate-fade-in">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-gray-800">Liquidación de Remesas</h2>
+                </div>
+
+                <div class="mb-6 border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button id="tab-btn-pendientes"
+                            class="border-brand-500 text-brand-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition"
+                            onclick="liquidaciones.switchTab('pendientes')">Lotes Pendientes</button>
+                        <button id="tab-btn-historial"
+                            class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition"
+                            onclick="liquidaciones.switchTab('historial')">Historial y Facturas</button>
+                    </nav>
+                </div>
+
+                <div id="liq-tab-pendientes" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-1">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Seleccionar Lote</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Remesa (Lote
+                                    Abierto)</label>
+                                <select id="liq-lote-select"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition"
+                                    onchange="liquidaciones.cargarLote()">
+                                    <option value="">Seleccione...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="liq-lote-info"
+                            class="mt-6 p-4 bg-white rounded-xl border border-brand-100 shadow-sm hidden animate-fade-in">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-xs text-gray-400 uppercase tracking-wider font-bold">Quintero</span>
+                                <span class="text-xl font-extrabold text-gray-900" id="liq-info-quintero"></span>
+                            </div>
+                            <div class="mt-3 flex flex-col gap-1 border-t border-gray-100 pt-3">
+                                <span class="text-xs text-gray-400 uppercase tracking-wider font-bold">Detalle de
+                                    Remesa</span>
+                                <span class="text-md font-bold text-brand-600" id="liq-info-detalle"></span>
+                            </div>
+                        </div>
+
+                        <div id="liq-panel-calculo" class="mt-6 hidden">
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+                                <h4 class="text-sm font-bold text-gray-600 mb-2 uppercase tracking-wider">Cálculo de
+                                    Rendimiento</h4>
+                                <div class="flex justify-between mb-1 text-sm">
+                                    <span class="text-gray-500">Ingresos Brutos Ventas:</span>
+                                    <span class="font-bold text-gray-800" id="liq-ingresos">$0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-1 text-sm">
+                                    <label class="text-gray-500 font-medium">Gastos Galpón ($):</label>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-red-500 font-bold">-</span>
+                                        <input type="number" id="liq-input-gastos" value="0" min="0" step="1000"
+                                            class="w-32 px-2 py-1 border border-gray-300 rounded text-right focus:ring-2 focus:ring-brand-500 outline-none text-red-600 font-bold"
+                                            oninput="liquidaciones.recalcularRendimiento()">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between mt-2 pt-2 border-t border-gray-200">
+                                    <span class="font-bold text-gray-800">Ganancia Neta Lote:</span>
+                                    <span class="font-bold text-green-600" id="liq-ganancia">$0.00</span>
+                                </div>
+                                <div
+                                    class="flex justify-between mt-2 pt-2 border-t border-blue-200 bg-blue-50 -mx-4 -mb-4 p-4 rounded-b-lg">
+                                    <span class="font-bold text-blue-800">Rendimiento x Raso:</span>
+                                    <span class="font-bold text-blue-800 text-lg" id="liq-rendimiento">$0.00</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Precio a pagar por Raso
+                                        ($)</label>
+                                    <input type="number" id="liq-precio-pagar" required
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition text-lg font-bold text-gray-800"
+                                        oninput="liquidaciones.actualizarTotal()">
+                                </div>
+                                <div class="flex justify-between items-center bg-gray-800 text-white p-4 rounded-lg">
+                                    <span class="font-medium">Total a Liquidar:</span>
+                                    <span class="text-2xl font-bold" id="liq-total-final">$0.00</span>
+                                </div>
+                                <button onclick="liquidaciones.guardarLiquidacion()" id="btn-guardar-liq"
+                                    class="w-full bg-brand-600 text-white px-4 py-3 rounded-lg hover:bg-brand-700 transition shadow-sm font-bold disabled:opacity-50">
+                                    Cerrar Lote y Liquidar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-2">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Resumen de Ventas del Lote</h3>
+                        <div class="responsive-table-wrapper">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 font-medium rounded-tl-lg">Producto</th>
+                                        <th class="px-4 py-3 font-medium">Calibre</th>
+                                        <th class="px-4 py-3 font-medium">Cant.</th>
+                                        <th class="px-4 py-3 font-medium">Precio Venta</th>
+                                        <th class="px-4 py-3 font-medium">Total</th>
+                                        <th class="px-4 py-3 font-medium rounded-tr-lg text-right w-10">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-liq-ventas" class="divide-y divide-gray-100">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-8 text-gray-400">Seleccione un lote para
+                                            ver sus ventas</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="liq-tab-historial" class="hidden">
+                    <div class="bg-white rounded-xl border border-gray-100 shadow-sm responsive-table-wrapper">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-4 font-medium">Fecha Ingreso</th>
+                                    <th class="px-6 py-4 font-medium">Quintero</th>
+                                    <th class="px-6 py-4 font-medium">Lotes Contenidos</th>
+                                    <th class="px-6 py-4 font-medium text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-historial-remesas" class="divide-y divide-gray-100">
+                                <tr>
+                                    <td colspan="4" class="text-center py-8 text-gray-400">Cargando historial...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cuentas Corrientes View -->
+            <div id="view-cuentas" class="view-section animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Estado de Cuenta</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Configuración de Vista -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-1">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Buscar Persona</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                <select id="cuenta-tipo"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition"
+                                    onchange="cuentas.cargarEntidades()">
+                                    <option value="quintero">Quintero (Proveedor)</option>
+                                    <option value="cliente">Cliente (Puestero)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                <select id="cuenta-entidad"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition"
+                                    onchange="cuentas.cargarMovimientos()">
+                                    <option value="">Seleccione...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="cuenta-resumen-panel"
+                            class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                            <h4 class="text-sm font-bold text-gray-600 mb-4 uppercase tracking-wider text-center">
+                                Resumen de Cuenta</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500" id="lbl-deuda">Total Deuda:</span>
+                                    <span class="font-bold text-red-600" id="cuenta-total-deuda">$0.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Total Pagos:</span>
+                                    <span class="font-bold text-green-600" id="cuenta-total-pagos">$0.00</span>
+                                </div>
+                                <div class="flex justify-between mt-2 pt-2 border-t border-gray-300 text-lg">
+                                    <span class="font-bold text-gray-800">Saldo:</span>
+                                    <span class="font-bold text-gray-900" id="cuenta-saldo">$0.00</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-center text-gray-500 mt-2" id="cuenta-saldo-texto"></p>
+                        </div>
+                    </div>
+
+                    <!-- Movimientos y Pagos -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm lg:col-span-3 flex flex-col">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg font-bold text-gray-800">Historial de Movimientos</h3>
+                            <button onclick="cuentas.abrirModalPago()" id="btn-nuevo-pago"
+                                class="hidden text-sm bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition font-medium shadow-sm">
+                                + Registrar Pago
+                            </button>
+                        </div>
+
+                        <div class="flex-1 responsive-table-wrapper">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 font-medium rounded-tl-lg w-24">Fecha</th>
+                                        <th class="px-4 py-3 font-medium">Detalle</th>
+                                        <th class="px-4 py-3 font-medium text-right text-red-700 bg-red-50">Debe</th>
+                                        <th
+                                            class="px-4 py-3 font-medium text-right text-green-700 bg-green-50 rounded-tr-lg">
+                                            Haber (Pagos)</th>
+                                        <th class="px-4 py-3 font-medium text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-movimientos" class="divide-y divide-gray-100">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-8 text-gray-400">Seleccione una persona
+                                            para ver su cuenta corriente</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Nuevo Pago -->
+            <div id="modal-pago"
+                class="hidden fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 animate-fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Registrar Pago</h3>
+                        <button onclick="document.getElementById('modal-pago').classList.add('hidden')"
+                            class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <form id="form-pago" onsubmit="cuentas.guardarPago(event)" class="space-y-4">
+                        <input type="hidden" id="edit-pago-id">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                            <input type="date" id="pago-fecha" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Detalle / Método</label>
+                            <input type="text" id="pago-detalle" placeholder="Ej: Efectivo, Cheque..." required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Importe ($)</label>
+                            <input type="number" id="pago-monto" min="0" step="0.01" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-lg font-bold">
+                        </div>
+                        <div class="pt-4 flex gap-3">
+                            <button type="button"
+                                onclick="document.getElementById('modal-pago').classList.add('hidden')"
+                                class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium">Cancelar</button>
+                            <button type="submit"
+                                class="flex-1 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition font-bold shadow-sm">Guardar
+                                Pago</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quinteros View -->
+            <div id="view-quinteros" class="view-section animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Quinteros</h2>
+                    <button onclick="catalogs.openQuinteroModal()"
+                        class="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition shadow-sm font-medium">
+                        + Nuevo Quintero
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm responsive-table-wrapper">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+                                <th class="px-6 py-4 font-medium">Nombre</th>
+                                <th class="px-6 py-4 font-medium">Teléfono</th>
+                                <th class="px-6 py-4 font-medium">Estado</th>
+                                <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-quinteros" class="divide-y divide-gray-100">
+                            <!-- Quinteros will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Clientes View -->
+            <div id="view-clientes" class="view-section animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Clientes (Puesteros)</h2>
+                    <button onclick="catalogs.openClienteModal()"
+                        class="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition shadow-sm font-medium">
+                        + Nuevo Cliente
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm responsive-table-wrapper">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+                                <th class="px-6 py-4 font-medium">Nombre</th>
+                                <th class="px-6 py-4 font-medium">Mercado</th>
+                                <th class="px-6 py-4 font-medium">Teléfono</th>
+                                <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-clientes" class="divide-y divide-gray-100">
+                            <!-- Clientes will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Gastos Fijos View -->
+            <div id="view-gastos" class="view-section animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Conceptos de Gastos Fijos</h2>
+                    <button onclick="catalogs.openGastoModal()"
+                        class="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition shadow-sm font-medium">
+                        + Nuevo Gasto
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm responsive-table-wrapper">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+                                <th class="px-6 py-4 font-medium">Descripción</th>
+                                <th class="px-6 py-4 font-medium text-right">Monto Actual ($)</th>
+                                <th class="px-6 py-4 font-medium">Estado</th>
+                                <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-gastos" class="divide-y divide-gray-100">
+                            <!-- Fixed expenses will be loaded here -->
+                        </tbody>
+                        <tfoot class="bg-gray-50 border-t-2 border-gray-100 font-bold">
+                            <tr>
+                                <td class="px-6 py-4 text-gray-700 text-sm uppercase">Total Activo (Costo x Torito)</td>
+                                <td class="px-6 py-4 text-right text-brand-700 text-lg" id="total-gastos-fijos">$ 0.00
+                                </td>
+                                <td colspan="2" class="px-6 py-4"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modals -->
+            <!-- Modal Lote -->
+            <div id="modal-lote" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+                <div
+                    class="bg-white rounded-xl shadow-lg w-full max-w-4xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800">Registrar Nuevo Ingreso (Múltiples Remesas)</h3>
+                        <button onclick="lotes.closeModal()" class="text-gray-400 hover:text-gray-600">&times;</button>
+                    </div>
+                    <form id="form-lote" onsubmit="lotes.saveLote(event)" class="flex flex-col flex-1 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 bg-white space-y-4 shrink-0">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                                    <input type="date" id="lote-fecha" required
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Quintero</label>
+                                    <select id="lote-quintero" required
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                                        <option value="">Seleccione...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded-lg flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-800"
+                                    viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-sm text-blue-800">Solo se crearán las remesas donde ingreses una
+                                    cantidad de <strong>Rasos mayor a 0</strong>.</span>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 max-h-[50vh] responsive-table-wrapper">
+                            <table class="w-full text-left border-collapse bg-white rounded-lg shadow-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                                        <th class="px-4 py-3 font-medium rounded-tl-lg">Producto</th>
+                                        <th class="px-4 py-3 font-medium">Calibre</th>
+                                        <th class="px-4 py-3 font-medium text-center w-28">Rasos Ingreso</th>
+                                        <th class="px-4 py-3 font-medium text-center w-28">Descarte</th>
+                                        <th class="px-4 py-3 font-medium text-center w-32 bg-green-50 text-green-800">
+                                            Toritos (Obt)</th>
+                                        <th class="px-4 py-3 font-medium rounded-tr-lg w-10"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-lote-detalles" class="divide-y divide-gray-100 text-sm">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                            <div class="mt-4">
+                                <button type="button" onclick="lotes.agregarFilaExtra()"
+                                    class="text-sm bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-50 transition font-medium shadow-sm">
+                                    + Agregar Fila Libre
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 shrink-0 bg-white">
+                            <button type="button" onclick="lotes.closeModal()"
+                                class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg transition font-medium">Cancelar</button>
+                            <button type="submit" id="btn-guardar-lotes"
+                                class="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 transition font-bold shadow-sm">Guardar
+                                Ingreso(s)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Edit Lote -->
+            <div id="modal-edit-lote" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800">Editar Remesa</h3>
+                        <button onclick="document.getElementById('modal-edit-lote').classList.add('hidden')"
+                            class="text-gray-400 hover:text-gray-600">&times;</button>
+                    </div>
+                    <form id="form-edit-lote" onsubmit="lotes.saveEditLote(event)" class="p-6 space-y-4">
+                        <input type="hidden" id="edit-lote-id">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Producto</label>
+                            <input type="text" id="edit-lote-producto" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Rasos Ingreso</label>
+                                <input type="number" id="edit-lote-rasos" required min="1"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Descarte</label>
+                                <input type="number" id="edit-lote-descarte" min="0"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Toritos (Obtenidos)</label>
+                            <input type="number" id="edit-lote-toritos" min="0"
+                                class="w-full px-4 py-2 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition bg-green-50 font-bold text-green-800">
+                        </div>
+                        <div class="pt-4 flex justify-end gap-3">
+                            <button type="button"
+                                onclick="document.getElementById('modal-edit-lote').classList.add('hidden')"
+                                class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg transition font-medium">Cancelar</button>
+                            <button type="submit"
+                                class="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 transition font-bold shadow-sm">Guardar
+                                Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+            <!-- Modal Quintero -->
+            <div id="modal-quintero" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-800" id="modal-quintero-title">Nuevo Quintero</h3>
+                        <button onclick="catalogs.closeModals()"
+                            class="text-gray-400 hover:text-gray-600">&times;</button>
+                    </div>
+                    <form id="form-quintero" onsubmit="catalogs.saveQuintero(event)" class="p-6 space-y-4">
+                        <input type="hidden" id="quintero-id">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                            <input type="text" id="quintero-nombre" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input type="text" id="quintero-telefono"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="quintero-estado"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="pt-4 flex gap-3 justify-end">
+                            <button type="button" onclick="catalogs.closeModals()"
+                                class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="submit"
+                                class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition shadow-sm">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Cliente -->
+            <div id="modal-cliente" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-800" id="modal-cliente-title">Nuevo Cliente</h3>
+                        <button onclick="catalogs.closeModals()"
+                            class="text-gray-400 hover:text-gray-600">&times;</button>
+                    </div>
+                    <form id="form-cliente" onsubmit="catalogs.saveCliente(event)" class="p-6 space-y-4">
+                        <input type="hidden" id="cliente-id">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                            <input type="text" id="cliente-nombre" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mercado</label>
+                            <input type="text" id="cliente-mercado"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input type="text" id="cliente-telefono"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                        </div>
+                        <div class="pt-4 flex gap-3 justify-end">
+                            <button type="button" onclick="catalogs.closeModals()"
+                                class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="submit"
+                                class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition shadow-sm">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Gasto Fijo -->
+            <div id="modal-gasto" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800" id="modal-gasto-title">Nuevo Gasto</h3>
+                        <button onclick="catalogs.closeModals()"
+                            class="text-gray-400 hover:text-gray-600">&times;</button>
+                    </div>
+                    <form id="form-gasto" onsubmit="catalogs.saveGasto(event)" class="p-6 space-y-4">
+                        <input type="hidden" id="gasto-id">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                            <input type="text" id="gasto-descripcion" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Monto Actual ($)</label>
+                            <input type="number" id="gasto-monto" step="0.01" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="gasto-activo"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                                <option value="true">Activo</option>
+                                <option value="false">Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="pt-4 flex justify-end gap-3">
+                            <button type="button" onclick="catalogs.closeModals()"
+                                class="px-4 py-2 text-gray-500 hover:text-gray-700 font-medium">Cancelar</button>
+                            <button type="submit"
+                                class="px-6 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition font-medium shadow-sm">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Movimiento Cuenta -->
+    <div id="modal-movimiento" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center"
+                id="modal-movimiento-header">
+                <h3 class="font-bold text-lg text-gray-800" id="modal-movimiento-title">Registrar Movimiento</h3>
+                <button onclick="dashboard.closeModal()" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="p-6">
+                <form id="form-movimiento" onsubmit="event.preventDefault(); dashboard.guardarMovimiento();">
+                    <input type="hidden" id="mov-tipo-entidad">
+                    <input type="hidden" id="mov-entidad-id">
+                    <input type="hidden" id="mov-tipo-movimiento">
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                        <input type="date" id="mov-fecha" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                    <div
+                        class="mb-4 p-3 bg-brand-50 rounded-lg border border-brand-100 flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-brand-600 font-bold uppercase tracking-wider">Saldo Pendiente</p>
+                            <p class="text-lg font-black text-brand-900" id="mov-saldo-actual">$ 0,00</p>
+                        </div>
+                        <button type="button" onclick="dashboard.llenarTotal()"
+                            class="bg-brand-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-brand-700 transition shadow-sm">
+                            Cargar Total
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Monto ($)</label>
+                        <input type="number" id="mov-monto" required min="1" step="0.01" placeholder="Ej: 50000"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-lg font-bold"
+                            oninput="dashboard.updateMontoPreview()">
+                        <p id="mov-monto-preview" class="text-xs text-gray-500 mt-1 font-medium italic"></p>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Detalle</label>
+                        <input type="text" id="mov-detalle" required
+                            placeholder="Ej: Efectivo, Transf. Banco, Cheque..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                    <div class="flex gap-3 justify-end">
+                        <button type="button" onclick="dashboard.closeModal()"
+                            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition font-medium">Cancelar</button>
+                        <button type="submit" id="btn-guardar-movimiento"
+                            class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition font-medium shadow-sm">Guardar
+                            Movimiento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor para Factura de Impresión -->
+    <div id="print-factura" class="hidden bg-white w-full">
+        <!-- COPIA 1 (EMISOR) -->
+        <div class="h-[48vh] flex flex-col justify-between pt-2 pb-6 border-b-2 border-dashed border-gray-400 px-8">
+            <div>
+                <div class="border-b-2 border-gray-800 pb-2 mb-4 flex justify-between items-end">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 mb-1 uppercase tracking-widest">Liquidación <span
+                                class="text-xs text-gray-500 ml-2 font-normal">(Copia Galpón)</span></h1>
+                        <p class="text-gray-600 font-medium text-sm">EasyEmpaques - Galpón de Empaque</p>
+                    </div>
+                    <div class="text-right text-sm">
+                        <p class="text-gray-600 font-bold mb-1">Fecha de Ingreso: <span
+                                class="print-fecha font-normal text-gray-800"></span></p>
+                        <p class="text-gray-600 font-bold">Quintero: <span
+                                class="print-quintero font-normal text-gray-800 uppercase"></span></p>
+                    </div>
+                </div>
+
+                <div>
+                    <table class="w-full text-left border-collapse border border-gray-300 text-sm">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-800 border-b border-gray-300 uppercase">
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold">Producto</th>
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold text-center">R. Recib.</th>
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold text-center">Descarte</th>
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold text-center">R. Útiles</th>
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold text-right">Precio x Raso</th>
+                                <th class="py-2 px-3 font-bold text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="print-detalles divide-y divide-gray-300 text-gray-800">
+                        </tbody>
+                        <tfoot class="bg-gray-50 border-t-2 border-gray-800">
+                            <tr>
+                                <td colspan="5" class="py-2 px-3 text-right font-bold text-gray-800 uppercase">Total a
+                                    Liquidar:</td>
+                                <td class="py-2 px-3 text-right font-bold text-gray-900 text-xl print-total">$0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-between px-16 text-center mt-2">
+                <div class="w-48 border-t border-gray-400 pt-1">
+                    <p class="text-gray-600 font-medium text-xs">Firma Recibí Conforme</p>
+                </div>
+                <div class="w-48 border-t border-gray-400 pt-1">
+                    <p class="text-gray-600 font-medium text-xs">Firma Emisor</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- COPIA 2 (QUINTERO) -->
+        <div class="h-[48vh] flex flex-col justify-between pt-8 pb-2 px-8">
+            <div>
+                <div class="border-b-2 border-gray-800 pb-2 mb-4 flex justify-between items-end">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 mb-1 uppercase tracking-widest">Liquidación <span
+                                class="text-xs text-gray-500 ml-2 font-normal">(Copia Quintero)</span></h1>
+                        <p class="text-gray-600 font-medium text-sm">EasyEmpaques - Galpón de Empaque</p>
+                    </div>
+                    <div class="text-right text-sm">
+                        <p class="text-gray-600 font-bold mb-1">Fecha de Ingreso: <span
+                                class="print-fecha font-normal text-gray-800"></span></p>
+                        <p class="text-gray-600 font-bold">Quintero: <span
+                                class="print-quintero font-normal text-gray-800 uppercase"></span></p>
+                    </div>
+                </div>
+
+                <div>
+                    <table class="w-full text-left border-collapse border border-gray-300 text-sm">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-800 border-b border-gray-300 uppercase">
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold">Producto</th>
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold text-center">R. Recib.</th>
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold text-center">Descarte</th>
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold text-center">R. Útiles</th>
+                                <th class="py-2 px-3 border-r border-gray-300 font-bold text-right">Precio x Raso</th>
+                                <th class="py-2 px-3 font-bold text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="print-detalles divide-y divide-gray-300 text-gray-800">
+                        </tbody>
+                        <tfoot class="bg-gray-50 border-t-2 border-gray-800">
+                            <tr>
+                                <td colspan="5" class="py-2 px-3 text-right font-bold text-gray-800 uppercase">Total a
+                                    Liquidar:</td>
+                                <td class="py-2 px-3 text-right font-bold text-gray-900 text-xl print-total">$0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-between px-16 text-center mt-2">
+                <div class="w-48 border-t border-gray-400 pt-1">
+                    <p class="text-gray-600 font-medium text-xs">Firma Recibí Conforme</p>
+                </div>
+                <div class="w-48 border-t border-gray-400 pt-1">
+                    <p class="text-gray-600 font-medium text-xs">Firma Emisor</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Scripts -->
+    <script src="js/supabase.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/lotes.js"></script>
+    <script src="js/ventas.js"></script>
+    <script src="js/liquidaciones.js"></script>
+    <script src="js/cuentas.js"></script>
+    <script src="js/catalogs.js"></script>
+    <script src="js/ganancias.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
