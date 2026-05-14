@@ -82,10 +82,39 @@ const liquidaciones = {
             // 1. Obtener todas las ventas de este lote
             const { data: ventasData, error: ventasError } = await window.supabaseClient
                 .from('ventas_detalles')
-                .select('producto, calibre, cantidad, precio_unitario_neto')
+                .select('id, producto, calibre, cantidad, precio_unitario_neto, envases(equivalencia_bulto)')
                 .eq('lote_id', loteId);
                 
             if (ventasError) throw ventasError;
+
+            // 1.5 Calcular stock disponible
+            const { data: envasesReq } = await window.supabaseClient.from('envases').select('*');
+            const envases = envasesReq || [];
+            const plantilla = window.appData?.plantilla_productos || [];
+            
+            let vendidasToritos = 0;
+            if (ventasData) {
+                ventasData.forEach(v => {
+                    const equiv = v.envases ? parseFloat(v.envases.equivalencia_bulto) : 1;
+                    vendidasToritos += (v.cantidad * equiv);
+                });
+            }
+            
+            const equivNativo = getEquivNativoLote(this.loteActual.producto, envases, plantilla);
+            const obtenidosToritos = this.loteActual.toritos_obtenidos * equivNativo;
+            const disponiblesToritos = Math.max(0, obtenidosToritos - vendidasToritos);
+            const disponiblesNativos = Math.round((disponiblesToritos / equivNativo) * 100) / 100;
+            
+            const nombreEnvase = getNombreEnvaseNativo(this.loteActual.producto, plantilla);
+            
+            let textoStock = `${disponiblesNativos} ${nombreEnvase}s`;
+            if (disponiblesNativos <= 0) {
+                textoStock = `<span class="text-green-600">Todo Vendido (0 ${nombreEnvase}s)</span>`;
+            } else {
+                textoStock = `<span class="text-blue-600">${disponiblesNativos} ${nombreEnvase}s disponibles</span>`;
+            }
+            
+            document.getElementById('liq-info-stock').innerHTML = textoStock;
 
             // 2. Obtener gastos fijos configurados
             const { data: gastosFijos, error: errorGastos } = await window.supabaseClient
