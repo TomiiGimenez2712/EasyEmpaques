@@ -18,37 +18,99 @@ window.app = {
             sidebar.classList.add('-translate-x-full');
             overlay.classList.add('hidden');
         }
+    },
+    setupAuth: async function() {
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        this.handleAuthState(session);
+
+        window.supabaseClient.auth.onAuthStateChange((_event, session) => {
+            this.handleAuthState(session);
+        });
+    },
+    handleAuthState: function(session) {
+        const loginView = document.getElementById('login-view');
+        const mainSidebar = document.getElementById('app-sidebar');
+        const mainContent = document.querySelector('main');
+
+        if (session) {
+            // Logueado
+            loginView.classList.add('hidden');
+            mainSidebar.classList.remove('hidden');
+            mainContent.classList.remove('hidden');
+            if(window.innerWidth >= 768) mainSidebar.style.display = 'flex'; // Fix para responsive
+            
+            this.initApp();
+        } else {
+            // No logueado
+            loginView.classList.remove('hidden');
+            mainSidebar.classList.add('hidden');
+            mainContent.classList.add('hidden');
+            mainSidebar.style.display = ''; 
+        }
+    },
+    login: async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('btn-login');
+        const errorDiv = document.getElementById('login-error');
+        
+        btn.disabled = true;
+        btn.textContent = 'Iniciando...';
+        errorDiv.classList.add('hidden');
+
+        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        btn.disabled = false;
+        btn.textContent = 'Ingresar';
+
+        if (error) {
+            errorDiv.textContent = 'Correo o contraseña incorrectos.';
+            errorDiv.classList.remove('hidden');
+        }
+    },
+    logout: async function() {
+        await window.supabaseClient.auth.signOut();
+    },
+    initApp: async function() {
+        if(this.initialized) return;
+        this.initialized = true;
+
+        // 1. Verificar conexión a BD (No bloqueante)
+        if(typeof checkConnection !== 'undefined') checkConnection();
+
+        // 2. Cargar vista inicial inmediatamente (según hash o dashboard)
+        const initialView = window.location.hash.replace('#', '') || 'dashboard';
+        loadView(initialView);
+
+        // 3. Cargar plantilla global (En segundo plano)
+        try {
+            const { data, error } = await window.supabaseClient.from('plantilla_productos').select('*').order('orden', {ascending: true});
+            if (data && !error) {
+                window.appData.plantilla_productos = data;
+                // Si la vista actual es 'lotes' o 'ventas', refrescar para usar la plantilla cargada
+                const currentView = window.location.hash.replace('#', '') || 'dashboard';
+                if (currentView === 'lotes' || currentView === 'ventas') {
+                    triggerModuleInit(currentView);
+                }
+            }
+        } catch (e) {
+            console.error("Error cargando plantilla:", e);
+        }
+
+        // 4. Configurar navegación
+        setupNavigation();
+
+        // 5. Configurar tablas responsivas
+        setupResponsiveTables();
     }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Verificar conexión a BD (No bloqueante)
-    checkConnection();
-
-    // 2. Cargar vista inicial inmediatamente (según hash o dashboard)
-    const initialView = window.location.hash.replace('#', '') || 'dashboard';
-    loadView(initialView);
-
-    // 3. Cargar plantilla global (En segundo plano)
-    try {
-        const { data, error } = await window.supabaseClient.from('plantilla_productos').select('*').order('orden', {ascending: true});
-        if (data && !error) {
-            window.appData.plantilla_productos = data;
-            // Si la vista actual es 'lotes' o 'ventas', refrescar para usar la plantilla cargada
-            const currentView = window.location.hash.replace('#', '') || 'dashboard';
-            if (currentView === 'lotes' || currentView === 'ventas') {
-                triggerModuleInit(currentView);
-            }
-        }
-    } catch (e) {
-        console.error("Error cargando plantilla:", e);
-    }
-
-    // 4. Configurar navegación
-    setupNavigation();
-
-    // 5. Configurar tablas responsivas
-    setupResponsiveTables();
+    app.setupAuth();
 });
 
 function setupNavigation() {

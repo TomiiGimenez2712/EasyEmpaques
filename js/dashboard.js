@@ -108,7 +108,7 @@ const dashboard = {
         // Liquidacion = a favor del quintero (+)
         // Pago = en contra del quintero (-)
         let saldos = {};
-        quinteros.forEach(q => saldos[q.id] = { nombre: q.nombre, saldo: 0 });
+        quinteros.forEach(q => saldos[q.id] = { id: q.id, nombre: q.nombre, saldo: 0 });
 
         movimientos.forEach(m => {
             if (m.tipo_entidad === 'quintero' && saldos[m.entidad_id]) {
@@ -135,7 +135,7 @@ const dashboard = {
                     <td class="py-3 px-2">${q.nombre}</td>
                     <td class="py-3 px-2 text-right ${textColor}">${montoStr}</td>
                     <td class="py-3 px-2 text-center">
-                        <button onclick="dashboard.openModal('quintero', ${Object.keys(saldos).find(k => saldos[k].nombre === q.nombre)}, '${q.nombre}', 'pago', ${q.saldo})" class="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition text-xs font-medium">
+                        <button onclick="dashboard.openModal('quintero', ${q.id}, '${q.nombre}', 'pago', ${q.saldo})" class="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition text-xs font-medium">
                             Pagar
                         </button>
                     </td>
@@ -152,7 +152,7 @@ const dashboard = {
         // Venta = a favor nuestro, deuda del cliente (+)
         // Cobro = pago del cliente, reduce su deuda (-)
         let saldos = {};
-        clientes.forEach(c => saldos[c.id] = { nombre: c.nombre, saldo: 0 });
+        clientes.forEach(c => saldos[c.id] = { id: c.id, nombre: c.nombre, saldo: 0 });
 
         movimientos.forEach(m => {
             if (m.tipo_entidad === 'cliente' && saldos[m.entidad_id]) {
@@ -178,7 +178,7 @@ const dashboard = {
                     <td class="py-3 px-2">${c.nombre}</td>
                     <td class="py-3 px-2 text-right ${textColor}">${montoStr}</td>
                     <td class="py-3 px-2 text-center">
-                        <button onclick="dashboard.openModal('cliente', ${Object.keys(saldos).find(k => saldos[k].nombre === c.nombre)}, '${c.nombre}', 'cobro', ${c.saldo})" class="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition text-xs font-medium">
+                        <button onclick="dashboard.openModal('cliente', ${c.id}, '${c.nombre}', 'cobro', ${c.saldo})" class="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition text-xs font-medium">
                             Cobrar
                         </button>
                     </td>
