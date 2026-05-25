@@ -1,5 +1,6 @@
 const ganancias = {
     chartInstance: null,
+    productosChartInstance: null,
     datosBase: [], // Cache de los datos crudos
 
     init: async function() {
@@ -20,6 +21,7 @@ const ganancias = {
                 .from('lotes_ingreso')
                 .select(`
                     id, 
+                    fecha,
                     producto, 
                     precio_final_pagado,
                     rasos_comprados,
@@ -84,7 +86,9 @@ const ganancias = {
                 // Si no tiene liquidación en cuenta, es raro, omitimos o usamos fallback
                 if (!liquidacion) continue;
 
-                const fechaLiq = new Date(liquidacion.fecha);
+                // Usamos la fecha de la liquidación (administrativa) tal como solicitó el usuario
+                const partes = liquidacion.fecha.split('-');
+                const fechaLiq = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
                 fechaLiq.setHours(12,0,0,0); // Evitar problemas de timezone
 
                 if (fechaLiq < fechaInicio || fechaLiq > hoy) {
@@ -134,6 +138,7 @@ const ganancias = {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">No hay ganancias registradas en este periodo.</td></tr>';
             this.renderCards(0, 0, 0);
             this.renderChart([]);
+            this.renderizarProductosReport();
             return;
         }
 
@@ -145,7 +150,7 @@ const ganancias = {
             tr.innerHTML = `
                 <td class="px-4 py-3" data-label="Lote / Fecha">
                     <div class="font-bold text-gray-800">Lote #${row.lote_id}</div>
-                    <div class="text-xs text-gray-500">${new Date(row.fecha).toLocaleDateString('es-AR')}</div>
+                    <div class="text-xs text-gray-500">${row.fecha.split('-').reverse().join('/')}</div>
                 </td>
                 <td class="px-4 py-3" data-label="Producto">
                     <span class="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-700">${row.producto || '?'}</span>
@@ -168,7 +173,7 @@ const ganancias = {
         const datosAsc = [...this.datosBase].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
         
         datosAsc.forEach(row => {
-            const fechaStr = new Date(row.fecha).toLocaleDateString('es-AR');
+            const fechaStr = row.fecha.split('-').reverse().join('/');
             if (!gananciasPorFecha[fechaStr]) {
                 gananciasPorFecha[fechaStr] = 0;
             }
@@ -179,6 +184,7 @@ const ganancias = {
         const data = Object.values(gananciasPorFecha);
 
         this.renderChart(labels, data);
+        this.renderizarProductosReport();
     },
 
     renderCards: function(total, conteo, promedio) {
@@ -243,6 +249,166 @@ const ganancias = {
                         }
                     }
                 }
+            }
+        });
+    },
+
+    renderizarProductosReport: function() {
+        const tbodyProd = document.getElementById('table-ganancias-productos');
+        if (!tbodyProd) return;
+
+        if (this.datosBase.length === 0) {
+            tbodyProd.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay datos de productos en este periodo.</td></tr>';
+            this.renderProductosChart([], []);
+            return;
+        }
+
+        // Agrupar por producto
+        const plantilla = window.appData?.plantilla_productos || [];
+        const agrupado = {};
+
+        this.datosBase.forEach(row => {
+            const prod = row.producto || 'Sin Especificar';
+            if (!agrupado[prod]) {
+                const envase = getNombreEnvaseNativo(prod, plantilla);
+                agrupado[prod] = {
+                    producto: prod,
+                    envase: envase,
+                    lotes: 0,
+                    ventas: 0,
+                    costo: 0,
+                    ganancia: 0
+                };
+            }
+            agrupado[prod].lotes += 1;
+            agrupado[prod].ventas += row.ingresos;
+            agrupado[prod].costo += row.pagado;
+            agrupado[prod].ganancia += row.ganancia;
+        });
+
+        // Convertir a array y ordenar por ganancia descendente
+        const lista = Object.values(agrupado).sort((a, b) => b.ganancia - a.ganancia);
+
+        // Renderizar tabla
+        tbodyProd.innerHTML = lista.map(row => {
+            const margen = row.ventas > 0 ? ((row.ganancia / row.ventas) * 100).toFixed(1) : '0.0';
+            
+            // Badge del envase
+            let badgeEnvase = '';
+            const envLower = row.envase.toLowerCase();
+            if (envLower.includes('torito')) {
+                badgeEnvase = '<span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full font-bold">Torito</span>';
+            } else if (envLower.includes('jaulita')) {
+                badgeEnvase = '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-bold">Jaulita</span>';
+            } else if (envLower.includes('bandeja')) {
+                badgeEnvase = '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded-full font-bold">Bandeja</span>';
+            } else {
+                badgeEnvase = `<span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-bold">${row.envase}</span>`;
+            }
+
+            return `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-4 py-3 font-semibold text-gray-800">${row.producto}</td>
+                    <td class="px-4 py-3 text-center">${badgeEnvase}</td>
+                    <td class="px-4 py-3 text-center font-medium">${row.lotes}</td>
+                    <td class="px-4 py-3 text-right text-gray-700">${formatCurrency(row.ventas)}</td>
+                    <td class="px-4 py-3 text-right text-red-500">-${formatCurrency(row.costo)}</td>
+                    <td class="px-4 py-3 text-right text-green-700 font-bold bg-green-50/50">${formatCurrency(row.ganancia)}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="px-2 py-1 text-xs rounded font-bold ${row.ganancia >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}">
+                            ${margen}%
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Gráfico de distribución
+        // Tomar top 5 y el resto agruparlo en "Otros"
+        const labelsChart = [];
+        const dataChart = [];
+        const coloresModernos = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#6b7280'];
+
+        if (lista.length > 5) {
+            for (let i = 0; i < 4; i++) {
+                if (lista[i] && lista[i].ganancia > 0) {
+                    labelsChart.push(lista[i].producto);
+                    dataChart.push(lista[i].ganancia);
+                }
+            }
+            let sumaOtros = 0;
+            for (let i = 4; i < lista.length; i++) {
+                if (lista[i] && lista[i].ganancia > 0) {
+                    sumaOtros += lista[i].ganancia;
+                }
+            }
+            if (sumaOtros > 0) {
+                labelsChart.push('Otros');
+                dataChart.push(sumaOtros);
+            }
+        } else {
+            lista.forEach(row => {
+                if (row.ganancia > 0) {
+                    labelsChart.push(row.producto);
+                    dataChart.push(row.ganancia);
+                }
+            });
+        }
+
+        this.renderProductosChart(labelsChart, dataChart, coloresModernos);
+    },
+
+    renderProductosChart: function(labels, data, colores) {
+        const ctx = document.getElementById('productosChart');
+        if (!ctx) return;
+
+        if (this.productosChartInstance) {
+            this.productosChartInstance.destroy();
+        }
+
+        if (labels.length === 0) {
+            this.productosChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: ['Sin ganancias'], datasets: [{ data: [1], backgroundColor: ['#e5e7eb'] }] },
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+            return;
+        }
+
+        this.productosChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colores || ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 12,
+                            font: { size: 11, weight: '500' },
+                            padding: 10
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw;
+                                return label + ': ' + formatCurrency(value);
+                            }
+                        }
+                    }
+                },
+                cutout: '60%'
             }
         });
     }

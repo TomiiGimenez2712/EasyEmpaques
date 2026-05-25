@@ -116,11 +116,15 @@ const liquidaciones = {
             
             document.getElementById('liq-info-stock').innerHTML = textoStock;
 
-            // 2. Obtener gastos fijos configurados
+            // 2. Obtener gastos fijos configurados del envase específico
+            const envaseLote = getNombreEnvaseNativo(this.loteActual.producto, plantilla) || 'Torito';
+            const envaseClave = ['Torito', 'Jaulita', 'Bandeja'].includes(envaseLote) ? envaseLote : 'Torito';
+
             const { data: gastosFijos, error: errorGastos } = await window.supabaseClient
                 .from('conceptos_gastos')
                 .select('monto_actual')
-                .eq('activo', true);
+                .eq('activo', true)
+                .eq('tipo_envase', envaseClave);
 
             let costoBasePorTorito = 0;
             if (gastosFijos) {
@@ -337,7 +341,7 @@ const liquidaciones = {
                 .from('lotes_ingreso')
                 .select('id, fecha, producto, rasos_comprados, rasos_descarte, precio_final_pagado, quintero_id, quinteros(nombre)')
                 .eq('estado', 'liquidado')
-                .order('fecha', {ascending: false});
+                .order('id', {ascending: false});
             
             if (error) throw error;
 
@@ -346,13 +350,25 @@ const liquidaciones = {
                 return;
             }
 
-            // Agrupar por quintero_id + fecha
+            const loteIds = data.map(l => l.id);
+
+            // Obtener los movimientos de liquidación para conocer la fecha real de la liquidación
+            const { data: movsData, error: mError } = await window.supabaseClient
+                .from('movimientos_cuenta')
+                .select('comprobante_relacionado_id, fecha')
+                .eq('tipo_movimiento', 'liquidacion')
+                .in('comprobante_relacionado_id', loteIds);
+
+            // Agrupar por quintero_id + fecha de liquidación
             const agrupado = {};
             data.forEach(lote => {
-                const key = `${lote.quintero_id}_${lote.fecha}`;
+                const mov = movsData ? movsData.find(m => m.comprobante_relacionado_id === lote.id) : null;
+                const fechaLiq = mov ? mov.fecha : lote.fecha; // Fallback por si no tiene movimiento aún
+
+                const key = `${lote.quintero_id}_${fechaLiq}`;
                 if (!agrupado[key]) {
                     agrupado[key] = {
-                        fecha: lote.fecha,
+                        fecha: fechaLiq,
                         quintero_id: lote.quintero_id,
                         quintero_nombre: lote.quinteros?.nombre || 'S/D',
                         lotes: []
@@ -362,6 +378,8 @@ const liquidaciones = {
             });
 
             this.historialRemesas = Object.values(agrupado);
+            // Ordenar historial por fecha de liquidación descendente para que sea cronológico
+            this.historialRemesas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
             
             let html = '';
             this.historialRemesas.forEach(remesa => {

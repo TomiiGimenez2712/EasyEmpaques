@@ -6,11 +6,11 @@ El sistema digitaliza el flujo completo de trabajo: desde la recepción de la me
 
 ## Características Principales
 
-*   **Gestión de Lotes (Ingresos):** Registro de la entrada de mercadería, separación por descartes y conversión a "Toritos" (bultos de venta).
+*   **Gestión de Lotes (Ingresos):** Registro de la entrada de mercadería, separación por descartes y conversión a bultos de venta.
 *   **Módulo de Ventas Rápido:** Interfaz orientada a dispositivos móviles (táctil) con botones rápidos preconfigurados por colores según el producto. Permite venta de múltiples lotes con prorrateo automático de gastos de flete.
-*   **Liquidaciones:** Cálculo automático de la ganancia neta por lote, sugiriendo el precio a pagar al quintero basado en el rendimiento de los rasos comprados.
-*   **Cuentas Corrientes Unificadas:** Sistema de balance bidireccional que maneja las deudas a favor del quintero (liquidaciones) y las deudas de los clientes (ventas), permitiendo registrar entregas de dinero y pagos parciales.
-*   **Reporte de Ganancias:** Dashboard gráfico interactivo para medir el rendimiento y beneficio neto del empaque por períodos (Día, Semana, Mes).
+*   **Liquidaciones y Gastos por Envase:** Cálculo automático de la ganancia neta por lote aplicando gastos fijos del galpón diferenciados según el tipo de envase del producto (**Torito**, **Jaulita** o **Bandeja**).
+*   **Cuentas Corrientes Unificadas:** Sistema de balance bidireccional que maneja las deudas a favor del quintero (liquidaciones) y las deudas de los clientes (ventas), registrando entregas de dinero y cobros.
+*   **Reporte Avanzado de Ganancias:** Dashboard interactivo con gráficos de evolución diaria y distribución (Doughnut) por producto, sumado a una tabla analítica de rentabilidad y margen que destaca qué productos conviene comprar y vender.
 
 ## Arquitectura y Tecnologías
 
@@ -47,6 +47,6 @@ Al no requerir Node.js, Webpack, ni ningún framework reactivo pesado (como Reac
 
 ## Instalación y Despliegue
 
-1. **Base de Datos:** Ejecuta el contenido de `sql/reset_database_full.sql` en el SQL Editor de tu proyecto en Supabase para construir la base de datos inicial con los datos de prueba.
+1. **Base de Datos:** Ejecuta el contenido de `sql/esquema_final.sql` en el SQL Editor de tu proyecto en Supabase para construir la base de datos inicial con los datos de prueba.
 2. **Conexión:** Asegúrate de que las credenciales en `js/supabase.js` coincidan con tu proyecto de Supabase.
 3. **Despliegue:** Sube la carpeta a cualquier servicio de hosting estático o abre `index.html` directamente en tu navegador web.

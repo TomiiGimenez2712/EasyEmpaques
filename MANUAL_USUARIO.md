@@ -40,9 +40,9 @@ Una vez que terminaste de vender todo (o casi todo) el stock de un Lote, es hora
 1. En la lista, verás los lotes que están "Activos" (aún no pagados).
 2. Haz clic en el botón **"Liquidar"** (icono de dinero verde) junto al lote deseado.
 3. El sistema te mostrará cuánto dinero recaudaste en total vendiendo ese lote.
-4. Ingresa los **"Gastos de Galpón"** o comisiones (esta será la ganancia directa del empaque).
+4. El sistema calculará y sugerirá automáticamente los **"Gastos de Galpón"** sumando los conceptos de gastos fijos activos configurados específicamente para el tipo de envase nativo del lote (Torito, Jaulita o Bandeja) multiplicados por la cantidad de bultos obtenidos. Puedes ajustar este monto manualmente si lo consideras necesario.
 5. El sistema te mostrará el "Rendimiento por Raso" (cuánta plata quedó limpia por cada cajón que trajo el quintero) y te sugerirá un precio a pagarle.
-6. Ajusta el **"Precio final por Raso"** si lo deseas. Al confirmar, el Lote se cerrará y la deuda se enviará automáticamente a la cuenta corriente del Quintero.
+6. Ajusta el **"Precio final por Raso"** si lo deseas. Al confirmar, el Lote se cerrará, su registro en el Historial de Liquidaciones se guardará bajo la **Fecha real de la Liquidación**, y la deuda se enviará automáticamente a la cuenta corriente del Quintero.
 
 ---
 
@@ -59,20 +59,21 @@ Aquí controlas quién te debe plata y a quién le debes. Funciona como una libr
 ---
 
 ## 5. Módulo "Ganancias (Reportes)"
-Este módulo es solo para ti. Te muestra el rendimiento financiero del galpón.
+Este módulo es solo para ti. Te muestra el rendimiento financiero del galpón en base a las fechas reales de liquidación de las remesas (sincronizado bajo la hora argentina local).
 
 **Cómo usarlo:**
 1. Selecciona el rango de tiempo (ej. "Últimos 30 días").
-2. Verás un gráfico de barras verdes con el total ganado por día.
-3. Abajo, en la tabla, verás el desglose por lote: 
-   * `Ingresos Brutos` (Plata que entró de la calle) 
-   * `Pagado a Quintero` (Plata que le pasaste al productor)
-   * `Ganancia Empaque` (La diferencia, tu plata limpia).
+2. **Gráficos en paralelo:**
+   - **Izquierda:** Evolución de ganancias netas por día de liquidación (gráfico de barras).
+   - **Derecha:** Distribución porcentual en un gráfico circular de anillo (Doughnut Chart) que te muestra interactivamente el aporte de ganancias neto de cada producto.
+3. **Rentabilidad por Producto (Top Convenientes):** Tabla interactiva ubicada en la parte superior del desglose que consolida tus ingresos, costos de compra y ganancias netas agrupados por cada variedad de producto (incluyendo artículos libres), calculando su porcentaje de margen de rentabilidad y ordenándolos automáticamente del más lucrativo al menos lucrativo. Es la herramienta clave para decidir qué comprar y vender.
+4. **Desglose por Lote:** Ubicada en la parte inferior, detalla de forma cronológica cada lote liquidado individualmente con sus `Ingresos Brutos` de ventas, el costo `Pagado a Quintero` y la `Ganancia Empaque` resultante.
 
 ---
 
 ## 6. Módulo "Catálogos" (Configuración)
-Aquí es donde agregas la información básica.
+Aquí es donde agregas la información básica del sistema.
 *   **Quinteros:** Los productores que te traen mercadería.
-*   **Clientes:** Los compradores.
-*   **Envases:** Define los tipos de bultos (Torito, Bandeja). *Ojo:* La "Equivalencia a Bulto" es clave. Si 1 Torito es la medida estándar (1), y necesitas 10 Bandejas para hacer 1 Torito, entonces la Bandeja tiene una equivalencia de `0.1`. Esto es vital para el cálculo correcto del stock.
+*   **Clientes:** Los compradores (puesteros).
+*   **Gastos Fijos:** Configura los conceptos de costo fijo de empaque y logística del galpón. Estos costos ahora están categorizados en tres pestañas (**Torito**, **Jaulita**, **Bandeja**), permitiéndote configurar costos de insumos y logística específicos e independientes para cada envase. Al crear o editar un gasto, puedes asociarlo a su envase respectivo en el selector del formulario.
+*   **Envases:** Define los tipos de bultos (Torito, Bandeja, Raso, Jaulita). *Ojo:* La "Equivalencia a Bulto" es clave. Si 1 Torito es la medida estándar (1.0), y necesitas 3 Bandejas para hacer 1 Torito, entonces la Bandeja tiene una equivalencia de `0.33`. Esto es vital para el cálculo correcto del stock consolidado.

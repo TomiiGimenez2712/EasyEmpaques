@@ -324,10 +324,18 @@ const lotes = {
                 .eq('activo', true);
 
             if (!gastosError && gastosData && gastosData.length > 0) {
-                // 3. Congelar gastos para cada lote insertado
+                // 3. Congelar gastos para cada lote insertado según su tipo de envase nativo
                 const gastosInsert = [];
-                lotesData.forEach(lote => {
-                    gastosData.forEach(g => {
+                lotesData.forEach((lote, index) => {
+                    const originalLote = remesasAGuardar[index];
+                    const envaseLote = getNombreEnvaseNativo(originalLote.producto, window.appData?.plantilla_productos) || 'Torito';
+                    // Fallback a 'Torito' si no es ninguno de los tres envases principales configurados
+                    const envaseClave = ['Torito', 'Jaulita', 'Bandeja'].includes(envaseLote) ? envaseLote : 'Torito';
+
+                    // Filtrar los conceptos activos que correspondan a este tipo de envase
+                    const gastosFiltrados = gastosData.filter(g => (g.tipo_envase || 'Torito') === envaseClave);
+
+                    gastosFiltrados.forEach(g => {
                         gastosInsert.push({
                             lote_id: lote.id,
                             concepto: g.descripcion,
@@ -336,12 +344,14 @@ const lotes = {
                     });
                 });
 
-                const { error: insertGastosError } = await window.supabaseClient
-                    .from('gastos_lote')
-                    .insert(gastosInsert);
-                
-                if (insertGastosError) {
-                    console.error("No se pudieron congelar los gastos", insertGastosError);
+                if (gastosInsert.length > 0) {
+                    const { error: insertGastosError } = await window.supabaseClient
+                        .from('gastos_lote')
+                        .insert(gastosInsert);
+                    
+                    if (insertGastosError) {
+                        console.error("No se pudieron congelar los gastos", insertGastosError);
+                    }
                 }
             }
             

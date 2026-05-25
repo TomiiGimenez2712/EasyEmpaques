@@ -46,6 +46,7 @@ CREATE TABLE conceptos_gastos (
     id SERIAL PRIMARY KEY,
     descripcion VARCHAR(255) NOT NULL,
     monto_actual NUMERIC(15,2) NOT NULL,
+    tipo_envase VARCHAR(100) DEFAULT 'Torito',
     activo BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
@@ -151,15 +152,33 @@ INSERT INTO envases (nombre, capacidad_kg, equivalencia_bulto) VALUES
 ('Raso', 24, 1.0)
 ON CONFLICT DO NOTHING;
 
-INSERT INTO conceptos_gastos (descripcion, monto_actual) VALUES
-('Cajón', 1300),
-('Embalado', 800),
-('Papel', 100),
-('Recinita', 100),
-('Palet', 100),
-('Suncho', 100),
-('Raclador', 300),
-('Carga', 110)
+INSERT INTO conceptos_gastos (descripcion, monto_actual, tipo_envase) VALUES
+('Cajón', 1300, 'Torito'),
+('Embalado', 800, 'Torito'),
+('Papel', 100, 'Torito'),
+('Recinita', 100, 'Torito'),
+('Palet', 100, 'Torito'),
+('Suncho', 100, 'Torito'),
+('Raclador', 300, 'Torito'),
+('Carga', 110, 'Torito'),
+-- Copia para Jaulita
+('Cajón', 1300, 'Jaulita'),
+('Embalado', 800, 'Jaulita'),
+('Papel', 100, 'Jaulita'),
+('Recinita', 100, 'Jaulita'),
+('Palet', 100, 'Jaulita'),
+('Suncho', 100, 'Jaulita'),
+('Raclador', 300, 'Jaulita'),
+('Carga', 110, 'Jaulita'),
+-- Copia para Bandeja
+('Cajón', 1300, 'Bandeja'),
+('Embalado', 800, 'Bandeja'),
+('Papel', 100, 'Bandeja'),
+('Recinita', 100, 'Bandeja'),
+('Palet', 100, 'Bandeja'),
+('Suncho', 100, 'Bandeja'),
+('Raclador', 300, 'Bandeja'),
+('Carga', 110, 'Bandeja')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO plantilla_productos (orden, envase_nombre, producto, calibre, bg_color, text_color) VALUES

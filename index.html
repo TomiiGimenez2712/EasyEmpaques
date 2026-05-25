@@ -224,21 +224,59 @@
                     </div>
                 </div>
 
-                <!-- Gráfico -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Evolución de Ganancias</h3>
-                    <div class="w-full h-64">
-                        <canvas id="gananciasChart"></canvas>
+                <!-- Gráficos -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Gráfico Evolución -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-[380px]">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 shrink-0">Evolución de Ganancias Diarias</h3>
+                        <div class="flex-1 w-full relative min-h-0">
+                            <canvas id="gananciasChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Gráfico Distribución por Producto -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-[380px]">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 shrink-0">Distribución de Ganancia por Producto</h3>
+                        <div class="flex-1 w-full relative min-h-0 flex items-center justify-center">
+                            <canvas id="productosChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rentabilidad por Producto -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-[250px]">
+                    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-green-50 rounded-t-xl">
+                        <h3 class="text-lg font-bold text-green-800">Rentabilidad y Rendimiento por Producto</h3>
+                        <span class="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded-full uppercase tracking-wider">Top Convenientes</span>
+                    </div>
+                    <div class="flex-1 overflow-y-auto responsive-table-wrapper p-4">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                    <th class="px-4 py-3 font-medium rounded-tl-lg">Producto</th>
+                                    <th class="px-4 py-3 font-medium text-center">Envase</th>
+                                    <th class="px-4 py-3 font-medium text-center">Lotes</th>
+                                    <th class="px-4 py-3 font-medium text-right">Total Ventas ($)</th>
+                                    <th class="px-4 py-3 font-medium text-right">Costo Compra ($)</th>
+                                    <th class="px-4 py-3 font-medium text-right text-green-700 bg-green-50">Ganancia Neta ($)</th>
+                                    <th class="px-4 py-3 font-medium text-center rounded-tr-lg">Margen (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-ganancias-productos" class="divide-y divide-gray-100 text-sm">
+                                <tr>
+                                    <td colspan="7" class="text-center py-8 text-gray-400">Cargando desglose de productos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 <!-- Desglose por Lote -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-[300px]">
-                    <div class="p-4 border-b border-gray-100">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-[300px] mt-6">
+                    <div class="p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl">
                         <h3 class="text-lg font-bold text-gray-800">Desglose por Lote</h3>
                     </div>
                     <div class="flex-1 overflow-y-auto responsive-table-wrapper p-4">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse text-sm">
                             <thead>
                                 <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
                                     <th class="px-4 py-3 font-medium rounded-tl-lg">Lote / Fecha</th>
@@ -618,7 +656,7 @@
                         <table class="w-full text-left border-collapse text-sm">
                             <thead>
                                 <tr class="bg-gray-50 text-gray-500 uppercase tracking-wider">
-                                    <th class="px-6 py-4 font-medium">Fecha Ingreso</th>
+                                    <th class="px-6 py-4 font-medium">Fecha Liquidación</th>
                                     <th class="px-6 py-4 font-medium">Quintero</th>
                                     <th class="px-6 py-4 font-medium">Lotes Contenidos</th>
                                     <th class="px-6 py-4 font-medium text-right">Acción</th>
@@ -825,6 +863,22 @@
                         + Nuevo Gasto
                     </button>
                 </div>
+                
+                <!-- Pestañas de Envase para Gastos -->
+                <div class="mb-6 border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button id="tab-gasto-torito"
+                            class="border-brand-500 text-brand-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition"
+                            onclick="catalogs.switchGastoTab('Torito')">Torito</button>
+                        <button id="tab-gasto-jaulita"
+                            class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition"
+                            onclick="catalogs.switchGastoTab('Jaulita')">Jaulita</button>
+                        <button id="tab-gasto-bandeja"
+                            class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition"
+                            onclick="catalogs.switchGastoTab('Bandeja')">Bandeja</button>
+                    </nav>
+                </div>
+
                 <div class="bg-white rounded-xl border border-gray-100 shadow-sm responsive-table-wrapper">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -840,7 +894,7 @@
                         </tbody>
                         <tfoot class="bg-gray-50 border-t-2 border-gray-100 font-bold">
                             <tr>
-                                <td class="px-6 py-4 text-gray-700 text-sm uppercase">Total Activo (Costo x Torito)</td>
+                                <td class="px-6 py-4 text-gray-700 text-sm uppercase">Total Activo (Costo x <span id="gasto-envase-total-label">Torito</span>)</td>
                                 <td class="px-6 py-4 text-right text-brand-700 text-lg" id="total-gastos-fijos">$ 0.00
                                 </td>
                                 <td colspan="2" class="px-6 py-4"></td>
@@ -1060,6 +1114,15 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Monto Actual ($)</label>
                             <input type="number" id="gasto-monto" step="0.01" required
                                 class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Envase Asociado</label>
+                            <select id="gasto-tipo-envase" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                                <option value="Torito">Torito</option>
+                                <option value="Jaulita">Jaulita</option>
+                                <option value="Bandeja">Bandeja</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>

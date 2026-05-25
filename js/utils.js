@@ -61,12 +61,12 @@ function getEquivNativoLote(productoNombre, envases, plantilla) {
  * Obtiene el nombre del envase nativo de un producto desde la plantilla
  */
 function getNombreEnvaseNativo(productoNombre, plantilla) {
-    if (!plantilla || !productoNombre) return 'Bultos';
+    if (!plantilla || !productoNombre) return 'Bulto';
     
     let pInfo = plantilla.find(p => {
         const nombrePlantilla = p.calibre ? `${p.producto} (${p.calibre})` : p.producto;
         return nombrePlantilla.toLowerCase() === productoNombre.toLowerCase() || p.producto.toLowerCase() === productoNombre.toLowerCase();
     });
 
-    return pInfo ? pInfo.envase_nombre : 'Bultos';
+    return pInfo ? pInfo.envase_nombre : 'Bulto';
 }

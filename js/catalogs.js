@@ -1,4 +1,7 @@
 const catalogs = {
+    gastoTabActiva: 'Torito',
+    gastosCargados: [],
+    
     // --- Modals Management ---
     openQuinteroModal: function(id = null) {
         document.getElementById('form-quintero').reset();
@@ -53,15 +56,16 @@ const catalogs = {
         document.getElementById('modal-gasto-title').textContent = id ? 'Editar Gasto' : 'Nuevo Gasto';
         
         if (id) {
-            const btn = document.querySelector(`button[onclick="catalogs.openGastoModal(${id})"]`);
-            if (btn) {
-                const tr = btn.closest('tr');
-                document.getElementById('gasto-id').value = id;
-                document.getElementById('gasto-descripcion').value = tr.children[0].textContent;
-                document.getElementById('gasto-monto').value = tr.children[1].textContent.replace('$', '').trim();
-                const estado = tr.children[2].textContent.toLowerCase();
-                document.getElementById('gasto-activo').value = estado.includes('activo') ? 'true' : 'false';
+            const gasto = this.gastosCargados.find(g => g.id == id);
+            if (gasto) {
+                document.getElementById('gasto-id').value = gasto.id;
+                document.getElementById('gasto-descripcion').value = gasto.descripcion;
+                document.getElementById('gasto-monto').value = gasto.monto_actual;
+                document.getElementById('gasto-tipo-envase').value = gasto.tipo_envase || 'Torito';
+                document.getElementById('gasto-activo').value = gasto.activo ? 'true' : 'false';
             }
+        } else {
+            document.getElementById('gasto-tipo-envase').value = this.gastoTabActiva;
         }
         
         document.getElementById('modal-gasto').classList.remove('hidden');
@@ -144,26 +148,49 @@ const catalogs = {
         `).join('');
     },
 
-    loadGastos: async function() {
-        const tbody = document.getElementById('table-gastos');
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Cargando...</td></tr>';
+    switchGastoTab: function(tab) {
+        this.gastoTabActiva = tab;
         
-        const { data, error } = await window.supabaseClient.from('conceptos_gastos').select('*').order('descripcion');
-        
-        if (error) {
-            console.error('Error cargando gastos:', error);
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Error al cargar datos</td></tr>';
-            return;
-        }
+        // Actualizar tabs visualmente
+        const envases = ['Torito', 'Jaulita', 'Bandeja'];
+        envases.forEach(env => {
+            const btn = document.getElementById(`tab-gasto-${env.toLowerCase()}`);
+            if (btn) {
+                if (env === tab) {
+                    btn.classList.add('border-brand-500', 'text-brand-600');
+                    btn.classList.remove('border-transparent', 'text-gray-500');
+                } else {
+                    btn.classList.remove('border-brand-500', 'text-brand-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                }
+            }
+        });
 
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay gastos registrados.</td></tr>';
+        // Actualizar label del pie de la tabla
+        const label = document.getElementById('gasto-envase-total-label');
+        if (label) label.textContent = tab;
+
+        this.renderGastos();
+    },
+
+    renderGastos: function() {
+        const tbody = document.getElementById('table-gastos');
+        if (!tbody) return;
+
+        // Filtrar gastos por tipo_envase activo
+        const gastosFiltrados = this.gastosCargados.filter(g => {
+            const envase = g.tipo_envase || 'Torito';
+            return envase.toLowerCase() === this.gastoTabActiva.toLowerCase();
+        });
+
+        if (gastosFiltrados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay gastos registrados para ${this.gastoTabActiva}.</td></tr>`;
             document.getElementById('total-gastos-fijos').textContent = '$ 0.00';
             return;
         }
 
         let total = 0;
-        tbody.innerHTML = data.map(g => {
+        tbody.innerHTML = gastosFiltrados.map(g => {
             if (g.activo) total += parseFloat(g.monto_actual);
             return `
                 <tr class="hover:bg-gray-50 transition">
@@ -189,6 +216,22 @@ const catalogs = {
         }).join('');
 
         document.getElementById('total-gastos-fijos').textContent = '$ ' + total.toFixed(2);
+    },
+
+    loadGastos: async function() {
+        const tbody = document.getElementById('table-gastos');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Cargando...</td></tr>';
+        
+        const { data, error } = await window.supabaseClient.from('conceptos_gastos').select('*').order('descripcion');
+        
+        if (error) {
+            console.error('Error cargando gastos:', error);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Error al cargar datos</td></tr>';
+            return;
+        }
+
+        this.gastosCargados = data || [];
+        this.renderGastos();
     },
 
     // --- Save and Delete Data ---
@@ -281,9 +324,10 @@ const catalogs = {
         const id = document.getElementById('gasto-id').value;
         const descripcion = document.getElementById('gasto-descripcion').value;
         const monto_actual = parseFloat(document.getElementById('gasto-monto').value);
+        const tipo_envase = document.getElementById('gasto-tipo-envase').value;
         const activo = document.getElementById('gasto-activo').value === 'true';
 
-        const payload = { descripcion, monto_actual, activo };
+        const payload = { descripcion, monto_actual, tipo_envase, activo };
 
         let result;
         if (id) {
