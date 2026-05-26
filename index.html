@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyEmpaques</title>
+    <title>Empaque Sapucay</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -23,7 +24,7 @@
                 }
             }
         }
-        
+
     </script>
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -43,26 +44,26 @@
     <div id="login-view" class="fixed inset-0 bg-gray-50 z-[100] flex items-center justify-center hidden">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-100 text-brand-600 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
+                <div class="mb-4 flex justify-center">
+                    <img src="logo.png" alt="Empaque Sapucay Logo" class="h-36 w-auto object-contain">
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">EasyEmpaques</h1>
                 <p class="text-gray-500 mt-2">Inicia sesión para continuar</p>
             </div>
-            
+
             <form id="form-login" onsubmit="app.login(event)" class="space-y-5">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
-                    <input type="email" id="login-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                    <input type="email" id="login-email" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-                    <input type="password" id="login-password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                    <input type="password" id="login-password" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
                 </div>
                 <div id="login-error" class="text-red-500 text-sm hidden text-center"></div>
-                <button type="submit" id="btn-login" class="w-full bg-brand-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-brand-700 transition shadow-sm">
+                <button type="submit" id="btn-login"
+                    class="w-full bg-brand-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-brand-700 transition shadow-sm">
                     Ingresar
                 </button>
             </form>
@@ -76,15 +77,8 @@
     <!-- Sidebar -->
     <aside id="app-sidebar"
         class="w-64 bg-white shadow-lg flex flex-col fixed inset-y-0 left-0 z-50 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex-shrink-0">
-        <div class="h-16 flex items-center justify-center border-b border-gray-100">
-            <h1 class="text-xl font-bold text-brand-600 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                EasyEmpaques
-            </h1>
+        <div class="h-20 flex items-center justify-center border-b border-gray-100 px-4">
+            <img src="logo.png" alt="Logo" class="h-14 w-auto object-contain">
         </div>
         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             <a href="#"
@@ -132,7 +126,8 @@
                 data-view="ganancias">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
                 <span>Ganancias (Reportes)</span>
             </a>
@@ -166,7 +161,8 @@
                 Gastos Fijos
             </a>
             <div class="mt-8 pt-4 border-t border-gray-100 px-4">
-                <button onclick="app.logout()" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors">
+                <button onclick="app.logout()"
+                    class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors">
                     <span class="material-symbols-rounded text-lg">logout</span>
                     Cerrar Sesión
                 </button>
@@ -177,7 +173,8 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
         <!-- Header Mobile / Top bar -->
-        <header class="md:hidden h-16 bg-white shadow-sm flex items-center px-4 sm:px-6 justify-between z-30 relative shrink-0">
+        <header
+            class="md:hidden h-16 bg-white shadow-sm flex items-center px-4 sm:px-6 justify-between z-30 relative shrink-0">
             <div class="flex items-center gap-2">
                 <button onclick="app.toggleSidebar()"
                     class="text-gray-500 hover:text-brand-600 focus:outline-none p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition">
@@ -186,7 +183,7 @@
                             d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <h1 class="text-lg font-bold text-brand-600">EasyEmpaques</h1>
+                <img src="logo.png" alt="Logo" class="h-10 w-auto object-contain">
             </div>
         </header>
 
@@ -199,7 +196,9 @@
                         <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Reporte de Ganancias</h2>
                         <p class="text-sm text-gray-500">Beneficio neto del empaque por lote liquidado</p>
                     </div>
-                    <select id="ganancias-filtro" onchange="if(typeof ganancias !== 'undefined') ganancias.cargarDatos()" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                    <select id="ganancias-filtro"
+                        onchange="if(typeof ganancias !== 'undefined') ganancias.cargarDatos()"
+                        class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
                         <option value="hoy">Hoy</option>
                         <option value="7">Últimos 7 días</option>
                         <option value="30" selected>Últimos 30 días</option>
@@ -210,15 +209,18 @@
 
                 <!-- Resumen Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
                         <span class="text-sm text-gray-500 font-medium mb-1">Ganancia Total</span>
                         <span class="text-3xl font-bold text-green-600" id="ganancias-total-label">$0</span>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
                         <span class="text-sm text-gray-500 font-medium mb-1">Lotes Liquidados</span>
                         <span class="text-3xl font-bold text-brand-600" id="ganancias-lotes-label">0</span>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center">
                         <span class="text-sm text-gray-500 font-medium mb-1">Promedio por Lote</span>
                         <span class="text-3xl font-bold text-blue-600" id="ganancias-promedio-label">$0</span>
                     </div>
@@ -235,7 +237,8 @@
                     </div>
                     <!-- Gráfico Distribución por Producto -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-[380px]">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4 shrink-0">Distribución de Ganancia por Producto</h3>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 shrink-0">Distribución de Ganancia por Producto
+                        </h3>
                         <div class="flex-1 w-full relative min-h-0 flex items-center justify-center">
                             <canvas id="productosChart"></canvas>
                         </div>
@@ -244,26 +247,32 @@
 
                 <!-- Rentabilidad por Producto -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-[250px]">
-                    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-green-50 rounded-t-xl">
+                    <div
+                        class="p-4 border-b border-gray-100 flex justify-between items-center bg-green-50 rounded-t-xl">
                         <h3 class="text-lg font-bold text-green-800">Rentabilidad y Rendimiento por Producto</h3>
-                        <span class="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded-full uppercase tracking-wider">Top Convenientes</span>
+                        <span
+                            class="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded-full uppercase tracking-wider">Top
+                            Convenientes</span>
                     </div>
                     <div class="flex-1 overflow-y-auto responsive-table-wrapper p-4">
                         <table class="w-full text-left border-collapse text-sm">
                             <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                <tr
+                                    class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
                                     <th class="px-4 py-3 font-medium rounded-tl-lg">Producto</th>
                                     <th class="px-4 py-3 font-medium text-center">Envase</th>
                                     <th class="px-4 py-3 font-medium text-center">Lotes</th>
                                     <th class="px-4 py-3 font-medium text-right">Total Ventas ($)</th>
                                     <th class="px-4 py-3 font-medium text-right">Costo Compra ($)</th>
-                                    <th class="px-4 py-3 font-medium text-right text-green-700 bg-green-50">Ganancia Neta ($)</th>
+                                    <th class="px-4 py-3 font-medium text-right text-green-700 bg-green-50">Ganancia
+                                        Neta ($)</th>
                                     <th class="px-4 py-3 font-medium text-center rounded-tr-lg">Margen (%)</th>
                                 </tr>
                             </thead>
                             <tbody id="table-ganancias-productos" class="divide-y divide-gray-100 text-sm">
                                 <tr>
-                                    <td colspan="7" class="text-center py-8 text-gray-400">Cargando desglose de productos...</td>
+                                    <td colspan="7" class="text-center py-8 text-gray-400">Cargando desglose de
+                                        productos...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -271,7 +280,8 @@
                 </div>
 
                 <!-- Desglose por Lote -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-[300px] mt-6">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-[300px] mt-6">
                     <div class="p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl">
                         <h3 class="text-lg font-bold text-gray-800">Desglose por Lote</h3>
                     </div>
@@ -284,7 +294,9 @@
                                     <th class="px-4 py-3 font-medium">Quintero</th>
                                     <th class="px-4 py-3 font-medium text-right">Ingresos Brutos</th>
                                     <th class="px-4 py-3 font-medium text-right">Pagado a Quintero</th>
-                                    <th class="px-4 py-3 font-medium text-right text-green-700 bg-green-50 rounded-tr-lg">Ganancia Empaque</th>
+                                    <th
+                                        class="px-4 py-3 font-medium text-right text-green-700 bg-green-50 rounded-tr-lg">
+                                        Ganancia Empaque</th>
                                 </tr>
                             </thead>
                             <tbody id="table-ganancias" class="divide-y divide-gray-100 text-sm">
@@ -573,7 +585,8 @@
                                 <span class="text-md font-bold text-brand-600" id="liq-info-detalle"></span>
                             </div>
                             <div class="mt-3 flex flex-col gap-1 border-t border-gray-100 pt-3">
-                                <span class="text-xs text-gray-400 uppercase tracking-wider font-bold">Stock Disponible</span>
+                                <span class="text-xs text-gray-400 uppercase tracking-wider font-bold">Stock
+                                    Disponible</span>
                                 <span class="text-md font-bold text-blue-600" id="liq-info-stock">Cargando...</span>
                             </div>
                         </div>
@@ -863,7 +876,7 @@
                         + Nuevo Gasto
                     </button>
                 </div>
-                
+
                 <!-- Pestañas de Envase para Gastos -->
                 <div class="mb-6 border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
@@ -894,7 +907,8 @@
                         </tbody>
                         <tfoot class="bg-gray-50 border-t-2 border-gray-100 font-bold">
                             <tr>
-                                <td class="px-6 py-4 text-gray-700 text-sm uppercase">Total Activo (Costo x <span id="gasto-envase-total-label">Torito</span>)</td>
+                                <td class="px-6 py-4 text-gray-700 text-sm uppercase">Total Activo (Costo x <span
+                                        id="gasto-envase-total-label">Torito</span>)</td>
                                 <td class="px-6 py-4 text-right text-brand-700 text-lg" id="total-gastos-fijos">$ 0.00
                                 </td>
                                 <td colspan="2" class="px-6 py-4"></td>
@@ -1209,8 +1223,8 @@
                 <div class="border-b-2 border-gray-800 pb-2 mb-4 flex justify-between items-end">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900 mb-1 uppercase tracking-widest">Liquidación <span
-                                class="text-xs text-gray-500 ml-2 font-normal">(Copia Galpón)</span></h1>
-                        <p class="text-gray-600 font-medium text-sm">EasyEmpaques - Galpón de Empaque</p>
+                                class="text-xs text-gray-500 ml-2 font-normal">(Copia Empaque)</span></h1>
+                        <p class="text-gray-600 font-medium text-sm">Empaque Sapucay</p>
                     </div>
                     <div class="text-right text-sm">
                         <p class="text-gray-600 font-bold mb-1">Fecha de Ingreso: <span
@@ -1262,7 +1276,7 @@
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900 mb-1 uppercase tracking-widest">Liquidación <span
                                 class="text-xs text-gray-500 ml-2 font-normal">(Copia Quintero)</span></h1>
-                        <p class="text-gray-600 font-medium text-sm">EasyEmpaques - Galpón de Empaque</p>
+                        <p class="text-gray-600 font-medium text-sm">Empaque Sapucay</p>
                     </div>
                     <div class="text-right text-sm">
                         <p class="text-gray-600 font-bold mb-1">Fecha de Ingreso: <span

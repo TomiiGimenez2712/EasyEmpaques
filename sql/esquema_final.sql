@@ -1,5 +1,5 @@
 -- ==========================================
--- MASTER RESET SCRIPT - EasyEmpaque
+-- MASTER RESET SCRIPT - Empaque Sapucay
 -- ==========================================
 -- Este script borra TODAS las tablas y las recrea 
 -- con el esquema actual necesario para que la app funcione.

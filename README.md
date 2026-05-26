@@ -1,6 +1,6 @@
-# EasyEmpaque
+# Empaque Sapucay
 
-EasyEmpaque es un sistema de gestión web (Micro-SaaS) diseñado para la administración integral de galpones de empaque hortícola. 
+Empaque Sapucay es un sistema de gestión web (Micro-SaaS) diseñado para la administración integral de galpones de empaque hortícola. 
 
 El sistema digitaliza el flujo completo de trabajo: desde la recepción de la mercadería del productor (Quintero), pasando por el proceso de empacado y venta a clientes finales, hasta la liquidación económica y el manejo de cuentas corrientes.
 

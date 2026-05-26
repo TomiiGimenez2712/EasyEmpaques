@@ -1,6 +1,6 @@
-# Manual de Usuario - EasyEmpaque
+# Manual de Usuario - Empaque Sapucay
 
-Bienvenido a EasyEmpaque, el sistema de gestión diseñado para simplificar el día a día en el galpón. A continuación, encontrarás una guía paso a paso para utilizar cada módulo del sistema.
+Bienvenido a Empaque Sapucay, el sistema de gestión diseñado para simplificar el día a día en el galpón. A continuación, encontrarás una guía paso a paso para utilizar cada módulo del sistema.
 
 ---
 

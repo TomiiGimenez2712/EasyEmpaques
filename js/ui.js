@@ -1,6 +1,6 @@
 /**
  * UI Component for custom Modals and Alerts
- * Adapted for EasyEmpaque
+ * Adapted for Empaque Sapucay
  */
 const UI = {
     showModal: function({ title, message, type = 'info', confirmText = 'Aceptar', cancelText = 'Cancelar', onConfirm = null }) {
