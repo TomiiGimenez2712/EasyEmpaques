@@ -11,11 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Instalar herramientas cliente de PostgreSQL
-      - name: Instalar cliente de PostgreSQL
+      # 1. Instalar la versión 17 del cliente de PostgreSQL
+      - name: Instalar cliente de PostgreSQL 17
         run: |
+          # Agregar el repositorio oficial de PostgreSQL para descargar la versión 17
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
           sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y postgresql-client-17
 
       # 2. Conectarse y descargar la base de datos
       - name: Generar backup de la base de datos
@@ -29,8 +32,8 @@ jobs:
           # Nombre del archivo con la fecha del día
           FILENAME="backup-easyempaques-$(date +'%Y-%m-%d_%H%M%S').sql"
           
-          # Cambiamos al puerto 6543 (Pooler) para usar IPv4
-          pg_dump -h $DB_HOST -p 6543 -U $DB_USER -d $DB_NAME -F c -b -v -f $FILENAME
+          # Usamos la versión de pg_dump de la carpeta de postgresql 17
+          /usr/lib/postgresql/17/bin/pg_dump -h $DB_HOST -p 6543 -U $DB_USER -d $DB_NAME -F c -b -v -f $FILENAME
           
           echo "BACKUP_FILENAME=$FILENAME" >> $GITHUB_ENV
 
