@@ -1,0 +1,42 @@
+name: Copia de Seguridad Automática - Supabase
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 00:00 UTC (las 21:00 hs en Argentina)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Esto nos permite forzar un backup manual cuando queramos desde la web
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Instalar herramientas cliente de PostgreSQL
+      - name: Instalar cliente de PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      # 2. Conectarse y descargar la base de datos
+      - name: Generar backup de la base de datos
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          DB_USER: postgres
+          DB_NAME: postgres
+        run: |
+          # Nombre del archivo con la fecha del día
+          FILENAME="backup-easyempaques-$(date +'%Y-%m-%d_%H%M%S').sql"
+          
+          # pg_dump extrae la base de datos completa de forma segura
+          pg_dump -h $DB_HOST -p 5432 -U $DB_USER -d $DB_NAME -F c -b -v -f $FILENAME
+          
+          echo "BACKUP_FILENAME=$FILENAME" >> $GITHUB_ENV
+
+      # 3. Guardar el archivo en la nube de GitHub
+      - name: Guardar copia en GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: copias-de-seguridad
+          path: ${{ env.BACKUP_FILENAME }}
+          retention-days: 30 # Las copias se guardarán gratis durante 30 días
