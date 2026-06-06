@@ -162,7 +162,7 @@ function loadView(viewName) {
 }
 
 function triggerModuleInit(viewName) {
-    console.log(`Inicializando módulo: ${viewName}`);
+    // Inicializando módulo
     try {
         switch(viewName) {
             case 'dashboard':

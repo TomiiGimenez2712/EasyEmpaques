@@ -3,7 +3,7 @@ const cuentas = {
     entidadActual: null,
 
     init: async function() {
-        console.log("Iniciando Cuentas Corrientes...");
+        // Iniciando Cuentas Corrientes...
         await this.cargarEntidades();
     },
 

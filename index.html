@@ -293,9 +293,9 @@
                                     <th class="px-4 py-3 font-medium">Producto</th>
                                     <th class="px-4 py-3 font-medium">Quintero</th>
                                     <th class="px-4 py-3 font-medium text-right">Ingresos Brutos</th>
-                                    <th class="px-4 py-3 font-medium text-right">Pagado a Quintero</th>
-                                    <th
-                                        class="px-4 py-3 font-medium text-right text-green-700 bg-green-50 rounded-tr-lg">
+                                    <th class="px-4 py-3 font-medium text-right text-orange-600">Gastos Lote</th>
+                                    <th class="px-4 py-3 font-medium text-right text-red-600">Pagado Quintero</th>
+                                    <th class="px-4 py-3 font-medium text-right text-green-700 bg-green-50 rounded-tr-lg">
                                         Ganancia Empaque</th>
                                 </tr>
                             </thead>
@@ -405,7 +405,7 @@
                                 <th class="px-6 py-4 font-medium">Fecha</th>
                                 <th class="px-6 py-4 font-medium">Quintero</th>
                                 <th class="px-6 py-4 font-medium">Producto</th>
-                                <th class="px-6 py-4 font-medium">Rasos</th>
+                                <th class="px-6 py-4 font-medium">Rasos / Desc.</th>
                                 <th class="px-6 py-4 font-medium">Toritos (Obt)</th>
                                 <th class="px-6 py-4 font-medium">Estado</th>
                                 <th class="px-6 py-4 font-medium text-right">Acciones</th>
@@ -943,29 +943,20 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="bg-blue-50 p-3 rounded-lg flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-800"
-                                    viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                <span class="text-sm text-blue-800">Solo se crearán las remesas donde ingreses una
-                                    cantidad de <strong>Rasos mayor a 0</strong>.</span>
-                            </div>
                         </div>
 
-                        <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 max-h-[50vh] responsive-table-wrapper">
+                        <div class="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 bg-gray-50 max-h-[50vh] responsive-table-wrapper">
+                            <div class="h-4 sm:h-6 shrink-0"></div>
                             <table class="w-full text-left border-collapse bg-white rounded-lg shadow-sm">
-                                <thead>
-                                    <tr class="bg-gray-100 text-gray-500 text-xs uppercase tracking-wider">
-                                        <th class="px-4 py-3 font-medium rounded-tl-lg">Producto</th>
-                                        <th class="px-4 py-3 font-medium">Calibre</th>
-                                        <th class="px-4 py-3 font-medium text-center w-28">Rasos Ingreso</th>
-                                        <th class="px-4 py-3 font-medium text-center w-28">Descarte</th>
+                                <thead class="sticky top-0 z-10 shadow-sm">
+                                    <tr class="text-gray-500 text-xs uppercase tracking-wider">
+                                        <th class="px-4 py-3 font-medium rounded-tl-lg bg-gray-100">Producto</th>
+                                        <th class="px-4 py-3 font-medium bg-gray-100">Calibre</th>
+                                        <th class="px-4 py-3 font-medium text-center w-28 bg-gray-100">Rasos Ingreso</th>
+                                        <th class="px-4 py-3 font-medium text-center w-28 bg-gray-100">Descarte</th>
                                         <th class="px-4 py-3 font-medium text-center w-32 bg-green-50 text-green-800">
                                             Toritos (Obt)</th>
-                                        <th class="px-4 py-3 font-medium rounded-tr-lg w-10"></th>
+                                        <th class="px-4 py-3 font-medium rounded-tr-lg w-10 bg-gray-100"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-lote-detalles" class="divide-y divide-gray-100 text-sm">
@@ -991,45 +982,61 @@
                 </div>
             </div>
 
-            <!-- Modal Edit Lote -->
+            <!-- Modal Edit Lote / Cargar Toritos -->
             <div id="modal-edit-lote" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
-                <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 overflow-hidden">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
                     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h3 class="text-lg font-bold text-gray-800">Editar Remesa</h3>
-                        <button onclick="document.getElementById('modal-edit-lote').classList.add('hidden')"
-                            class="text-gray-400 hover:text-gray-600">&times;</button>
+                        <h3 class="text-lg font-bold text-gray-800">Editar Lote / Procesar Toritos</h3>
+                        <button type="button" onclick="document.getElementById('modal-edit-lote').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">&times;</button>
                     </div>
-                    <form id="form-edit-lote" onsubmit="lotes.saveEditLote(event)" class="p-6 space-y-4">
+                    <form id="form-edit-lote" onsubmit="lotes.saveEditLote(event)" class="flex flex-col flex-1 overflow-hidden">
                         <input type="hidden" id="edit-lote-id">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Producto</label>
-                            <input type="text" id="edit-lote-producto" required
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        <div class="p-6 bg-white shrink-0 grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-gray-100">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Producto Original</label>
+                                <input type="text" id="edit-lote-producto" readonly class="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600 outline-none cursor-not-allowed">
+                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Rasos Ingreso</label>
-                                <input type="number" id="edit-lote-rasos" required min="1"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                                <input type="number" id="edit-lote-rasos" min="0" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Descarte</label>
-                                <input type="number" id="edit-lote-descarte" min="0"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
+                                <input type="number" id="edit-lote-descarte" min="0" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none transition">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Toritos (Obtenidos)</label>
-                            <input type="number" id="edit-lote-toritos" min="0"
-                                class="w-full px-4 py-2 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition bg-green-50 font-bold text-green-800">
+
+                        <div class="px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2 shrink-0">
+                             <span class="material-symbols-rounded text-blue-600 text-sm">info</span>
+                             <span class="text-xs text-blue-800">Anota abajo los toritos que vayas obteniendo para este ingreso. Si ya no tienes stock de alguna calidad, ponle 0.</span>
                         </div>
-                        <div class="pt-4 flex justify-end gap-3">
-                            <button type="button"
-                                onclick="document.getElementById('modal-edit-lote').classList.add('hidden')"
-                                class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg transition font-medium">Cancelar</button>
-                            <button type="submit"
-                                class="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 transition font-bold shadow-sm">Guardar
-                                Cambios</button>
+
+                        <div class="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 bg-gray-50 max-h-[50vh] responsive-table-wrapper">
+                            <div class="h-4 sm:h-6 shrink-0"></div>
+                            <table class="w-full text-left border-collapse bg-white rounded-lg shadow-sm">
+                                <thead class="sticky top-0 z-10 shadow-sm">
+                                    <tr class="text-gray-500 text-xs uppercase tracking-wider">
+                                        <th class="px-4 py-3 font-medium rounded-tl-lg bg-gray-100">Producto</th>
+                                        <th class="px-4 py-3 font-medium bg-gray-100">Calibre</th>
+                                        <th class="px-4 py-3 font-medium text-center w-32 bg-green-50 text-green-800">Toritos (Obt)</th>
+                                        <th class="px-4 py-3 font-medium rounded-tr-lg w-10 bg-gray-100"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-edit-detalles" class="divide-y divide-gray-100 text-sm">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                            <div class="mt-4">
+                                <button type="button" onclick="lotes.agregarFilaExtraEdit()" class="text-sm bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-50 transition font-medium shadow-sm">
+                                    + Fila Libre
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 shrink-0 bg-white">
+                            <button type="button" onclick="document.getElementById('modal-edit-lote').classList.add('hidden')" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg transition font-medium">Cancelar</button>
+                            <button type="submit" id="btn-guardar-edit-lote" class="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 transition font-bold shadow-sm">Guardar Lote y Toritos</button>
                         </div>
                     </form>
                 </div>

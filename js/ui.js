@@ -44,7 +44,7 @@ const UI = {
                 <span class="material-symbols-rounded text-3xl">${icon}</span>
             </div>
             <h3 class="text-xl font-bold mb-2 text-center text-gray-900">${title}</h3>
-            <p class="text-sm text-gray-500 font-medium mb-6 text-center leading-relaxed">${message}</p>
+            <div class="text-sm text-gray-500 font-medium mb-6 text-center leading-relaxed">${message}</div>
             <div class="flex gap-3" id="ui-modal-actions">
                 ${type === 'confirm' ? `<button id="ui-btn-cancel" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-all active:scale-95 text-sm">
                     ${cancelText}
@@ -94,5 +94,40 @@ const UI = {
 
     confirm: function(message, onConfirm, title = 'Confirmar Acción') {
         this.showModal({ title, message, type: 'confirm', confirmText: 'Si, seguro', onConfirm });
+    },
+
+    prompt: function(message, onConfirm, title = 'Ingresar Dato', defaultValue = '') {
+        const inputHtml = `
+            <div class="mt-4">
+                <input type="text" id="ui-prompt-input" value="${defaultValue}" 
+                    class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-center font-bold text-gray-800 text-lg shadow-inner">
+            </div>
+        `;
+        
+        this.showModal({ 
+            title, 
+            message: message + inputHtml, 
+            type: 'confirm', 
+            confirmText: 'Aceptar', 
+            onConfirm: () => {
+                const val = document.getElementById('ui-prompt-input')?.value;
+                if (onConfirm) onConfirm(val);
+            } 
+        });
+
+        // Auto-focus and select
+        setTimeout(() => {
+            const input = document.getElementById('ui-prompt-input');
+            if (input) {
+                input.focus();
+                input.select();
+                // Enable Enter to submit
+                input.addEventListener('keyup', (e) => {
+                    if (e.key === 'Enter') {
+                        document.getElementById('ui-btn-confirm').click();
+                    }
+                });
+            }
+        }, 100);
     }
 };

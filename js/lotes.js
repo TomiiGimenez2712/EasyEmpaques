@@ -14,27 +14,30 @@ const lotes = {
         }
 
         // Renderizar grilla
-        this.renderizarGrillaBase();
+        this.renderizarGrillaBase('table-lote-detalles');
 
         document.getElementById('modal-lote').classList.remove('hidden');
     },
 
-    renderizarGrillaBase: function() {
-        const tbody = document.getElementById('table-lote-detalles');
+    renderizarGrillaBase: function(tbodyId) {
+        const tbody = document.getElementById(tbodyId);
         tbody.innerHTML = '';
         
         if (window.appData && window.appData.plantilla_productos) {
             window.appData.plantilla_productos.forEach(item => {
-                this.agregarFila(item);
+                this.agregarFila(item, tbodyId);
             });
         }
     },
 
-    agregarFila: function(plantillaItem) {
-        const tbody = document.getElementById('table-lote-detalles');
+    agregarFila: function(plantillaItem, tbodyId) {
+        const tbody = document.getElementById(tbodyId);
         const tr = document.createElement('tr');
         tr.className = "fila-lote group hover:bg-gray-50 transition";
         
+        // Determinar qué inputs mostrar según si es el form principal o el form de edit
+        const isEdit = tbodyId === 'table-edit-detalles';
+
         tr.innerHTML = `
             <td class="px-2 py-2 font-medium">
                 <div class="px-2 py-1 rounded text-center text-xs font-bold ${plantillaItem.bg_color} ${plantillaItem.text_color}">
@@ -46,13 +49,16 @@ const lotes = {
                 ${plantillaItem.calibre || '-'}
                 <input type="hidden" class="input-calibre" value="${plantillaItem.calibre || ''}">
             </td>
+            ${!isEdit ? `
             <td class="px-2 py-2">
-                <input type="number" class="input-rasos w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 outline-none text-center" min="1" placeholder="0">
+                <input type="number" class="input-rasos w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 outline-none text-center" min="0" placeholder="0">
             </td>
             <td class="px-2 py-2">
                 <input type="number" class="input-descarte w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 outline-none text-center" min="0" placeholder="0">
             </td>
+            ` : ''}
             <td class="px-2 py-2">
+                <input type="hidden" class="input-hijo-id" value="">
                 <input type="number" class="input-toritos w-full px-2 py-1 border border-green-300 rounded focus:ring-1 focus:ring-green-500 outline-none text-center bg-green-50 text-green-800 font-bold" min="0" placeholder="0">
             </td>
             <td class="px-2 py-2 text-right">
@@ -62,9 +68,18 @@ const lotes = {
     },
 
     agregarFilaExtra: function() {
-        const tbody = document.getElementById('table-lote-detalles');
+        this._agregarFilaLibre('table-lote-detalles');
+    },
+
+    agregarFilaExtraEdit: function() {
+        this._agregarFilaLibre('table-edit-detalles');
+    },
+
+    _agregarFilaLibre: function(tbodyId) {
+        const tbody = document.getElementById(tbodyId);
         const tr = document.createElement('tr');
         tr.className = "fila-lote group hover:bg-gray-50 transition bg-gray-50";
+        const isEdit = tbodyId === 'table-edit-detalles';
         
         tr.innerHTML = `
             <td class="px-2 py-2">
@@ -73,13 +88,16 @@ const lotes = {
             <td class="px-2 py-2 text-xs text-center">
                 <input type="text" placeholder="Calibre" class="input-calibre w-full px-2 py-1.5 border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 outline-none text-xs text-center">
             </td>
+            ${!isEdit ? `
             <td class="px-2 py-2">
-                <input type="number" class="input-rasos w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 outline-none text-center" min="1" placeholder="0">
+                <input type="number" class="input-rasos w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 outline-none text-center" min="0" placeholder="0">
             </td>
             <td class="px-2 py-2">
                 <input type="number" class="input-descarte w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-brand-500 outline-none text-center" min="0" placeholder="0">
             </td>
+            ` : ''}
             <td class="px-2 py-2">
+                <input type="hidden" class="input-hijo-id" value="">
                 <input type="number" class="input-toritos w-full px-2 py-1 border border-green-300 rounded focus:ring-1 focus:ring-green-500 outline-none text-center bg-green-50 text-green-800 font-bold" min="0" placeholder="0">
             </td>
             <td class="px-2 py-2 text-right">
@@ -97,7 +115,7 @@ const lotes = {
 
     loadLotes: async function() {
         const tbody = document.getElementById('table-lotes');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Cargando...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Cargando...</td></tr>';
         
         const { data, error } = await window.supabaseClient
             .from('lotes_ingreso')
@@ -110,72 +128,116 @@ const lotes = {
         
         if (error) {
             console.error('Error cargando lotes:', error);
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Error al cargar datos</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-red-500">Error al cargar datos</td></tr>';
             return;
         }
 
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No hay lotes registrados.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No hay lotes registrados.</td></tr>';
             return;
         }
 
-        // Formatear la fecha manualmente evitando desfase por UTC
-        tbody.innerHTML = data.map(l => {
-            // "2026-05-01" -> aDate local timezone -> puede restar 1 día. Mejor parseo manual:
-            const partesFecha = l.fecha.split('-');
-            const fechaLocal = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}`;
+        // Agrupar padres e hijos
+        const padres = data.filter(l => !l.lote_padre_id);
+        const hijos = data.filter(l => l.lote_padre_id);
 
-            return `
-            <tr class="hover:bg-gray-50 transition group">
-                <td class="px-6 py-4 font-medium text-gray-900">#${l.id}</td>
+        // Ordenar padres: estado 'abierto' primero, luego fecha más reciente, luego id desc
+        padres.sort((a, b) => {
+            if (a.estado !== b.estado) {
+                return a.estado === 'abierto' ? -1 : 1;
+            }
+            const dateA = new Date(a.fecha).getTime();
+            const dateB = new Date(b.fecha).getTime();
+            if (dateA !== dateB) {
+                return dateB - dateA;
+            }
+            return b.id - a.id;
+        });
+
+        let html = '';
+        padres.forEach(p => {
+            const partesFecha = p.fecha.split('-');
+            const fechaLocal = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}`;
+            
+            // Fila Padre
+            html += `
+            <tr class="hover:bg-blue-50 transition group bg-white border-b border-gray-200">
+                <td class="px-6 py-4 font-bold text-gray-900">#${p.id}</td>
                 <td class="px-6 py-4">${fechaLocal}</td>
-                <td class="px-6 py-4">${l.quinteros?.nombre || '-'}</td>
-                <td class="px-6 py-4">${l.producto || 'S/D'}</td>
-                <td class="px-6 py-4">${l.rasos_comprados}</td>
-                <td class="px-6 py-4 text-brand-600 font-bold">${l.toritos_obtenidos}</td>
+                <td class="px-6 py-4 font-medium">${p.quinteros?.nombre || '-'}</td>
+                <td class="px-6 py-4 font-bold text-blue-800">${p.producto || 'S/D'}</td>
+                <td class="px-6 py-4 font-bold text-gray-800">
+                    ${p.rasos_comprados}
+                    ${p.rasos_descarte > 0 ? `<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-md font-bold ml-2">-${p.rasos_descarte} desc</span>` : ''}
+                </td>
+                <td class="px-6 py-4 text-green-600 font-bold">${p.toritos_obtenidos > 0 ? p.toritos_obtenidos : '-'}</td>
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-[10px] rounded-full font-bold uppercase tracking-wider ${l.estado === 'abierto' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}">
-                        ${l.estado}
+                    <span class="px-2 py-1 text-[10px] rounded-full font-bold uppercase tracking-wider ${p.estado === 'abierto' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}">
+                        ${p.estado}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
                     <div class="flex justify-end gap-2">
-                        ${l.estado === 'abierto' ? `
-                            <button onclick="lotes.editLote(${l.id})" class="p-1 text-gray-400 hover:text-brand-600 transition" title="Editar">
+                        ${p.estado === 'abierto' ? `
+                            <button onclick="lotes.editLote(${p.id})" class="p-1 text-gray-400 hover:text-brand-600 transition" title="Editar Padre y Toritos">
                                 <span class="material-symbols-rounded text-lg">edit</span>
                             </button>
-                            <button onclick="lotes.deleteLote(${l.id})" class="p-1 text-gray-400 hover:text-red-600 transition" title="Eliminar">
+                            <button onclick="lotes.deleteLote(${p.id})" class="p-1 text-gray-400 hover:text-red-600 transition" title="Eliminar Lote Completo">
                                 <span class="material-symbols-rounded text-lg">delete</span>
                             </button>
                         ` : `
-                            <span class="p-1 text-gray-300 cursor-not-allowed" title="Lote Liquidado (No editable)">
+                            <span class="p-1 text-gray-300 cursor-not-allowed" title="Lote Liquidado">
                                 <span class="material-symbols-rounded text-lg">lock</span>
                             </span>
                         `}
                     </div>
                 </td>
-            </tr>
-        `}).join('');
+            </tr>`;
+
+            // Filas Hijos
+            const hijosDelPadre = hijos.filter(h => h.lote_padre_id === p.id);
+            hijosDelPadre.sort((a, b) => a.id - b.id); // Ordenar hijos por ID ascendente
+            hijosDelPadre.forEach(h => {
+                html += `
+                <tr class="hover:bg-gray-50 transition group bg-gray-50 border-b border-gray-100">
+                    <td class="px-6 py-2 text-gray-500 flex items-center gap-2 pl-10"><span class="material-symbols-rounded text-gray-300">subdirectory_arrow_right</span> #${h.id}</td>
+                    <td class="px-6 py-2 text-gray-400 text-sm">↳ Sublote</td>
+                    <td class="px-6 py-2 text-gray-400 text-sm">-</td>
+                    <td class="px-6 py-2 font-medium text-gray-700">${h.producto || 'S/D'}</td>
+                    <td class="px-6 py-2 text-gray-400">-</td>
+                    <td class="px-6 py-2 text-green-600 font-bold">${h.toritos_obtenidos}</td>
+                    <td class="px-6 py-2"></td>
+                    <td class="px-6 py-2 text-right">
+                        <!-- El hijo se edita desde el lapiz del padre -->
+                    </td>
+                </tr>`;
+            });
+        });
+        tbody.innerHTML = html;
     },
 
     deleteLote: async function(id) {
-        UI.confirm("¿Está seguro que desea eliminar este lote? Esto podría afectar el stock disponible.", async () => {
+        UI.confirm("¿Está seguro que desea eliminar este lote? Esto podría afectar el stock disponible. Si es un Lote Padre, se eliminarán todos sus sublotes.", async () => {
             try {
-                // Verificar si tiene ventas
-                const { data: ventas, error: vError } = await window.supabaseClient
+                // Verificar si tiene ventas el lote o sus hijos
+                const { data: hijos } = await window.supabaseClient.from('lotes_ingreso').select('id').eq('lote_padre_id', id);
+                const idsToCheck = [id];
+                if (hijos) idsToCheck.push(...hijos.map(h => h.id));
+
+                const { data: ventas } = await window.supabaseClient
                     .from('ventas_detalles')
                     .select('id')
-                    .eq('lote_id', id);
+                    .in('lote_id', idsToCheck);
                 
                 if (ventas && ventas.length > 0) {
-                    UI.error("No se puede eliminar un lote que ya tiene ventas asociadas.");
+                    UI.error("No se puede eliminar un lote que ya tiene ventas asociadas (incluyendo sublotes).");
                     return;
                 }
 
-                // Eliminar gastos congelados primero
-                await window.supabaseClient.from('gastos_lote').delete().eq('lote_id', id);
+                // Gastos
+                await window.supabaseClient.from('gastos_lote').delete().in('lote_id', idsToCheck);
 
-                // Eliminar lote
+                // Eliminar lote (hijos se borran por CASCADE en BD, pero por si acaso eliminamos directo)
                 const { error } = await window.supabaseClient
                     .from('lotes_ingreso')
                     .delete()
@@ -193,73 +255,181 @@ const lotes = {
     },
 
     editLote: async function(id) {
-        const { data, error } = await window.supabaseClient
+        const { data: padre, error } = await window.supabaseClient
             .from('lotes_ingreso')
             .select('*')
             .eq('id', id)
             .single();
         
-        if (error || !data) return;
+        if (error || !padre) return;
 
-        if (data.estado === 'liquidado') {
+        if (padre.estado === 'liquidado') {
             UI.error("No se puede editar un lote que ya ha sido liquidado.");
             return;
         }
 
-        // Poblar modal
-        document.getElementById('edit-lote-id').value = data.id;
-        document.getElementById('edit-lote-producto').value = data.producto;
-        document.getElementById('edit-lote-rasos').value = data.rasos_comprados;
-        document.getElementById('edit-lote-descarte').value = data.rasos_descarte || 0;
-        document.getElementById('edit-lote-toritos').value = data.toritos_obtenidos || 0;
+        // Obtener hijos
+        const { data: hijos } = await window.supabaseClient
+            .from('lotes_ingreso')
+            .select('*')
+            .eq('lote_padre_id', id);
+
+        // Poblar cabecera de edición
+        document.getElementById('edit-lote-id').value = padre.id;
+        document.getElementById('edit-lote-producto').value = padre.producto;
+        document.getElementById('edit-lote-rasos').value = padre.rasos_comprados || 0;
+        document.getElementById('edit-lote-descarte').value = padre.rasos_descarte || 0;
+
+        // Renderizar plantilla
+        this.renderizarGrillaBase('table-edit-detalles');
+
+        // Llenar toritos de los hijos en la plantilla
+        const tbody = document.getElementById('table-edit-detalles');
+        const filas = tbody.querySelectorAll('.fila-lote');
+        const hijosRenderizados = new Set();
+
+        filas.forEach(tr => {
+            const productoGrid = tr.querySelector('.input-producto').value.trim();
+            const calibreGrid = tr.querySelector('.input-calibre').value.trim();
+            const nombreFinalGrid = calibreGrid ? `${productoGrid} (${calibreGrid})` : productoGrid;
+
+            // Buscar si es el propio padre o un hijo
+            if (padre.producto === nombreFinalGrid) {
+                tr.querySelector('.input-toritos').value = padre.toritos_obtenidos || 0;
+            } else {
+                const hijo = hijos?.find(h => h.producto === nombreFinalGrid);
+                if (hijo) {
+                    tr.querySelector('.input-hijo-id').value = hijo.id;
+                    tr.querySelector('.input-toritos').value = hijo.toritos_obtenidos;
+                    hijosRenderizados.add(hijo.id);
+                }
+            }
+        });
+
+        // Agregar filas extra para hijos que no estaban en la plantilla
+        if (hijos) {
+            hijos.forEach(h => {
+                if (!hijosRenderizados.has(h.id)) {
+                    this.agregarFilaExtraEdit();
+                    const trs = tbody.querySelectorAll('.fila-lote');
+                    const lastTr = trs[trs.length - 1];
+
+                    // Separar nombre y calibre rudimentariamente si no lo sabemos
+                    let prodText = h.producto;
+                    let calText = '';
+                    if (prodText.includes('(') && prodText.includes(')')) {
+                        const parts = prodText.split('(');
+                        prodText = parts[0].trim();
+                        calText = parts[1].replace(')', '').trim();
+                    }
+
+                    lastTr.querySelector('.input-producto').value = prodText;
+                    lastTr.querySelector('.input-calibre').value = calText;
+                    lastTr.querySelector('.input-hijo-id').value = h.id;
+                    lastTr.querySelector('.input-toritos').value = h.toritos_obtenidos;
+                }
+            });
+        }
 
         document.getElementById('modal-edit-lote').classList.remove('hidden');
     },
 
     saveEditLote: async function(e) {
         e.preventDefault();
-        const id = document.getElementById('edit-lote-id').value;
-        const producto = document.getElementById('edit-lote-producto').value;
-        const rasos = parseInt(document.getElementById('edit-lote-rasos').value);
+        const padreId = parseInt(document.getElementById('edit-lote-id').value);
+        const rasos = parseInt(document.getElementById('edit-lote-rasos').value) || 0;
         const descarte = parseInt(document.getElementById('edit-lote-descarte').value) || 0;
-        const toritos = parseInt(document.getElementById('edit-lote-toritos').value) || 0;
+
+        const btnSubmit = document.getElementById('btn-guardar-edit-lote');
+        const textoOriginal = btnSubmit.innerHTML;
+        btnSubmit.innerHTML = 'Guardando...';
+        btnSubmit.disabled = true;
 
         try {
-            // Verificar integridad: No podemos poner menos toritos de los que ya vendimos
-            const { data: ventas, error: vError } = await window.supabaseClient
-                .from('ventas_detalles')
-                .select('cantidad')
-                .eq('lote_id', id);
-                
-            if (vError) throw vError;
-
-            let toritosVendidos = 0;
-            if (ventas && ventas.length > 0) {
-                toritosVendidos = ventas.reduce((sum, v) => sum + v.cantidad, 0);
-            }
-
-            if (toritos < toritosVendidos) {
-                UI.error(`Error de integridad: Ya has vendido ${toritosVendidos} unidades de este lote. No puedes reducir el stock total por debajo de esa cifra.`);
-                return;
-            }
-
-            const { error } = await window.supabaseClient
+            // 1. Actualizar Lote Padre
+            const { error: padreError } = await window.supabaseClient
                 .from('lotes_ingreso')
-                .update({
-                    producto: producto,
-                    rasos_comprados: rasos,
-                    rasos_descarte: descarte,
-                    toritos_obtenidos: toritos
-                })
-                .eq('id', id);
+                .update({ rasos_comprados: rasos, rasos_descarte: descarte })
+                .eq('id', padreId);
             
-            if (error) throw error;
+            if (padreError) throw padreError;
+
+            // Para que los hijos hereden fecha y quintero del padre
+            const { data: padreData } = await window.supabaseClient.from('lotes_ingreso').select('*').eq('id', padreId).single();
+
+            // 2. Procesar Grilla para Hijos
+            const filas = document.querySelectorAll('#table-edit-detalles .fila-lote');
+            
+            let toritosPadreActualizados = false;
+            let totalToritosPadre = 0;
+
+            for (let i = 0; i < filas.length; i++) {
+                const tr = filas[i];
+                const hijoId = tr.querySelector('.input-hijo-id').value;
+                const toritos = parseInt(tr.querySelector('.input-toritos').value) || 0;
+                
+                const producto = tr.querySelector('.input-producto').value.trim();
+                const calibre = tr.querySelector('.input-calibre').value.trim();
+                const nombreFinal = calibre ? `${producto} (${calibre})` : producto;
+
+                if (!producto && !hijoId) continue; // Fila vacía, ignorar
+
+                if (nombreFinal === padreData.producto) {
+                    totalToritosPadre += toritos;
+                    toritosPadreActualizados = true;
+                    if (hijoId) {
+                        const { data: ventas } = await window.supabaseClient.from('ventas_detalles').select('id').eq('lote_id', hijoId);
+                        if (!ventas || ventas.length === 0) {
+                            await window.supabaseClient.from('lotes_ingreso').delete().eq('id', hijoId);
+                        } else {
+                            await window.supabaseClient.from('lotes_ingreso').update({ toritos_obtenidos: 0 }).eq('id', hijoId);
+                        }
+                    }
+                    continue;
+                }
+
+                if (hijoId) {
+                    // Hijo existente
+                    if (toritos > 0) {
+                        await window.supabaseClient.from('lotes_ingreso').update({ toritos_obtenidos: toritos }).eq('id', hijoId);
+                    } else {
+                        const { data: ventas } = await window.supabaseClient.from('ventas_detalles').select('id').eq('lote_id', hijoId);
+                        if (ventas && ventas.length > 0) {
+                            await window.supabaseClient.from('lotes_ingreso').update({ toritos_obtenidos: 0 }).eq('id', hijoId);
+                        } else {
+                            await window.supabaseClient.from('lotes_ingreso').delete().eq('id', hijoId);
+                        }
+                    }
+                } else {
+                    // Hijo nuevo
+                    if (toritos > 0 && producto) {
+                        await window.supabaseClient.from('lotes_ingreso').insert([{
+                            lote_padre_id: padreId,
+                            fecha: padreData.fecha,
+                            quintero_id: padreData.quintero_id,
+                            producto: nombreFinal,
+                            rasos_comprados: 0,
+                            rasos_descarte: 0,
+                            toritos_obtenidos: toritos,
+                            estado: 'abierto'
+                        }]);
+                    }
+                }
+            }
+
+            if (toritosPadreActualizados) {
+                await window.supabaseClient.from('lotes_ingreso').update({ toritos_obtenidos: totalToritosPadre }).eq('id', padreId);
+            }
 
             UI.success("Lote actualizado correctamente.");
             document.getElementById('modal-edit-lote').classList.add('hidden');
             this.loadLotes();
+
         } catch (err) {
             UI.error("Error al actualizar: " + err.message);
+        } finally {
+            btnSubmit.innerHTML = textoOriginal;
+            btnSubmit.disabled = false;
         }
     },
 
@@ -269,39 +439,119 @@ const lotes = {
         const fecha = document.getElementById('lote-fecha').value;
         const quintero_id = parseInt(document.getElementById('lote-quintero').value);
 
-        const filas = document.querySelectorAll('.fila-lote');
-        const remesasAGuardar = [];
+        const filas = document.querySelectorAll('#table-lote-detalles .fila-lote');
+        const operaciones = [];
+        const padresPorFamilia = {};
 
+        // Función para determinar la familia de un producto (ej. "Pto Veteado" -> "pimiento")
+        const getFamiliaProducto = (prod) => {
+            if (!prod) return '';
+            const p = prod.toLowerCase();
+            if (p.includes('tomate') || p.includes('cherry')) return 'tomate';
+            if (p.includes('pto') || p.includes('pimiento')) return 'pimiento';
+            if (p.includes('chaucha')) return 'chaucha';
+            if (p.includes('melon') || p.includes('melón')) return 'melon';
+            return p.split(' ')[0].trim(); // Por defecto, la primera palabra
+        };
+
+        // 1. Primera pasada: Identificar y crear Lotes Padres
         filas.forEach(tr => {
             const rasosInput = tr.querySelector('.input-rasos');
-            const rasos = parseInt(rasosInput.value);
+            const rasos = parseInt(rasosInput ? rasosInput.value : 0) || 0;
+            const descarteInput = tr.querySelector('.input-descarte');
+            const descarte = parseInt(descarteInput ? descarteInput.value : 0) || 0;
+            const productoBase = tr.querySelector('.input-producto').value.trim();
+            const calibre = tr.querySelector('.input-calibre').value.trim();
+            const nombreFinal = calibre ? `${productoBase} (${calibre})` : productoBase;
 
-            if (rasos > 0) {
-                const producto = tr.querySelector('.input-producto').value.trim();
-                const calibre = tr.querySelector('.input-calibre').value.trim(); // Podemos guardarlo si la BD lo soportara, o concatenarlo
-                const descarte = parseInt(tr.querySelector('.input-descarte').value) || 0;
-                const toritos = parseInt(tr.querySelector('.input-toritos').value) || 0;
-
-                const nombreFinal = calibre ? `${producto} (${calibre})` : producto;
-
-                if (producto) {
-                    remesasAGuardar.push({
+            if (productoBase && rasos > 0) {
+                const nuevoPadreOp = {
+                    padre: {
                         fecha,
                         quintero_id,
                         producto: nombreFinal,
                         rasos_comprados: rasos,
                         rasos_descarte: descarte,
-                        toritos_obtenidos: toritos,
-                        estado: 'abierto'
-                    });
+                        toritos_obtenidos: 0,
+                        estado: 'abierto',
+                        lote_padre_id: null
+                    },
+                    hijos: []
+                };
+                operaciones.push(nuevoPadreOp);
+
+                // Agrupar por FAMILIA para la segunda pasada
+                const familia = getFamiliaProducto(productoBase);
+                if (!padresPorFamilia[familia]) {
+                    padresPorFamilia[familia] = [];
+                }
+                padresPorFamilia[familia].push(nuevoPadreOp);
+            }
+        });
+
+        if (operaciones.length === 0) {
+            UI.alert("Debe ingresar al menos una cantidad de Rasos en algún producto para crear un Ingreso.", "Datos incompletos");
+            return;
+        }
+
+        // 2. Segunda pasada: Asignar Lotes Hijos (toritos)
+        let errorValidacion = null;
+        filas.forEach(tr => {
+            const rasosInput = tr.querySelector('.input-rasos');
+            const rasos = parseInt(rasosInput ? rasosInput.value : 0) || 0;
+            const toritos = parseInt(tr.querySelector('.input-toritos').value) || 0;
+            const productoBase = tr.querySelector('.input-producto').value.trim();
+            const calibre = tr.querySelector('.input-calibre').value.trim();
+            const nombreFinal = calibre ? `${productoBase} (${calibre})` : productoBase;
+
+            if (productoBase && toritos > 0) {
+                const hijo = {
+                    fecha,
+                    quintero_id,
+                    producto: nombreFinal,
+                    rasos_comprados: 0,
+                    rasos_descarte: 0,
+                    toritos_obtenidos: toritos,
+                    estado: 'abierto',
+                    lote_padre_id: null // Se asigna luego
+                };
+
+                const familia = getFamiliaProducto(productoBase);
+
+                if (rasos > 0) {
+                    // Si tiene rasos, se auto-asigna a sí mismo (el padre que se creó en esta misma fila)
+                    const miPadre = padresPorFamilia[familia]?.find(p => p.padre.producto === nombreFinal && p.padre.rasos_comprados === rasos);
+                    if (miPadre) {
+                        if (miPadre.padre.producto === nombreFinal) {
+                            miPadre.padre.toritos_obtenidos += toritos;
+                        } else {
+                            miPadre.hijos.push(hijo);
+                        }
+                    }
+                } else {
+                    // Si NO tiene rasos, busca un padre de la misma FAMILIA (ej. "pimiento" para "Pto Veteado")
+                    const padresPosibles = padresPorFamilia[familia];
+                    if (padresPosibles && padresPosibles.length > 0) {
+                        // Lo asignamos al primer padre de esta familia que hayamos encontrado
+                        const padreAsignado = padresPosibles[0];
+                        if (padreAsignado.padre.producto === nombreFinal) {
+                            padreAsignado.padre.toritos_obtenidos += toritos;
+                        } else {
+                            padreAsignado.hijos.push(hijo);
+                        }
+                    } else {
+                        // Hay toritos pero no ingresaron rasos de la familia en ninguna fila
+                        errorValidacion = `Ingresaste ${toritos} toritos de "${nombreFinal}", pero no declaraste ningún Raso de la familia "${familia}" (o similar) en este ingreso.`;
+                    }
                 }
             }
         });
 
-        if (remesasAGuardar.length === 0) {
-            UI.alert("Debe ingresar al menos una cantidad de Rasos en algún producto.", "Datos incompletos");
+        if (errorValidacion) {
+            UI.alert(errorValidacion, "Error de Consistencia");
             return;
         }
+
 
         const btnSubmit = document.getElementById('btn-guardar-lotes');
         const textoOriginal = btnSubmit.innerHTML;
@@ -309,55 +559,48 @@ const lotes = {
         btnSubmit.disabled = true;
 
         try {
-            // 1. Insertar Lotes
-            const { data: lotesData, error: lotesError } = await window.supabaseClient
-                .from('lotes_ingreso')
-                .insert(remesasAGuardar)
-                .select('id');
+            for (let op of operaciones) {
+                // 1. Insertar Lote Padre
+                const { data: dataPadre, error: errPadre } = await window.supabaseClient
+                    .from('lotes_ingreso')
+                    .insert([op.padre])
+                    .select('id')
+                    .single();
+                
+                if (errPadre) throw errPadre;
+                const padreId = dataPadre.id;
 
-            if (lotesError) throw lotesError;
+                // 2. Insertar Lotes Hijos
+                if (op.hijos && op.hijos.length > 0) {
+                    op.hijos.forEach(h => h.lote_padre_id = padreId);
+                    const { error: errHijo } = await window.supabaseClient
+                        .from('lotes_ingreso')
+                        .insert(op.hijos);
+                    if (errHijo) throw errHijo;
+                }
 
-            // 2. Obtener gastos fijos actuales
-            const { data: gastosData, error: gastosError } = await window.supabaseClient
-                .from('conceptos_gastos')
-                .select('*')
-                .eq('activo', true);
-
-            if (!gastosError && gastosData && gastosData.length > 0) {
-                // 3. Congelar gastos para cada lote insertado según su tipo de envase nativo
-                const gastosInsert = [];
-                lotesData.forEach((lote, index) => {
-                    const originalLote = remesasAGuardar[index];
-                    const envaseLote = getNombreEnvaseNativo(originalLote.producto, window.appData?.plantilla_productos) || 'Torito';
-                    // Fallback a 'Torito' si no es ninguno de los tres envases principales configurados
-                    const envaseClave = ['Torito', 'Jaulita', 'Bandeja'].includes(envaseLote) ? envaseLote : 'Torito';
-
-                    // Filtrar los conceptos activos que correspondan a este tipo de envase
+                // 3. Gastos
+                const envaseLote = getNombreEnvaseNativo(op.padre.producto, window.appData?.plantilla_productos) || 'Torito';
+                const envaseClave = ['Torito', 'Jaulita', 'Bandeja'].includes(envaseLote) ? envaseLote : 'Torito';
+                const { data: gastosData } = await window.supabaseClient.from('conceptos_gastos').select('*').eq('activo', true);
+                
+                if (gastosData) {
                     const gastosFiltrados = gastosData.filter(g => (g.tipo_envase || 'Torito') === envaseClave);
-
-                    gastosFiltrados.forEach(g => {
-                        gastosInsert.push({
-                            lote_id: lote.id,
-                            concepto: g.descripcion,
-                            monto_congelado: g.monto_actual
-                        });
-                    });
-                });
-
-                if (gastosInsert.length > 0) {
-                    const { error: insertGastosError } = await window.supabaseClient
-                        .from('gastos_lote')
-                        .insert(gastosInsert);
+                    const gastosInsert = gastosFiltrados.map(g => ({
+                        lote_id: padreId,
+                        concepto: g.descripcion,
+                        monto_congelado: g.monto_actual
+                    }));
                     
-                    if (insertGastosError) {
-                        console.error("No se pudieron congelar los gastos", insertGastosError);
+                    if (gastosInsert.length > 0) {
+                        await window.supabaseClient.from('gastos_lote').insert(gastosInsert);
                     }
                 }
             }
             
             this.closeModal();
             this.loadLotes();
-            UI.success(`Se registraron exitosamente ${remesasAGuardar.length} remesas.`);
+            UI.success(`Se registraron exitosamente ${operaciones.length} partidas de ingreso.`);
 
         } catch (err) {
             console.error(err);
@@ -368,6 +611,3 @@ const lotes = {
         }
     }
 };
-
-// Eliminado el listener antiguo de DOMContentLoaded para lotes,
-// ya que app.js ahora maneja la inicialización mediante triggerModuleInit.

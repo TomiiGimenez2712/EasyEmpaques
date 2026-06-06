@@ -6,12 +6,12 @@ window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON
 
 // Función para verificar si hay conexión (intenta hacer una lectura mínima)
 async function checkConnection() {
-    console.log("Iniciando checkConnection...");
     try {
-        console.log("Haciendo fetch a Supabase...");
-        const { data, error } = await window.supabaseClient.from('conceptos_gastos').select('id').limit(1);
-        if (error) throw error;
-        console.log("Conectado a DB exitosamente.");
+        const { data, error } = await window.supabaseClient.from('quinteros').select('count', { count: 'exact', head: true });
+        
+        if (error) {
+            throw error;
+        }
     } catch (err) {
         console.error("Error de conexión con Supabase detallado:", err);
         UI.error("Fallo de conexión a la Base de Datos. Revisa tu internet o los permisos de red. Detalles: " + err.message);

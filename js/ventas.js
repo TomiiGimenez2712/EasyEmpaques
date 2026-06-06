@@ -4,7 +4,7 @@ const ventas = {
     clientesDisponibles: [],
 
     init: async function () {
-        console.log("Iniciando Ventas...");
+        // Iniciando Ventas...
         // Mantener la fecha si ya está puesta, o poner hoy
         if (!document.getElementById('venta-fecha').value) {
             document.getElementById('venta-fecha').value = new Date().toLocaleDateString('en-CA');

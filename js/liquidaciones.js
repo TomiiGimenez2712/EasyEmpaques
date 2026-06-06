@@ -33,6 +33,7 @@ const liquidaciones = {
                 .from('lotes_ingreso')
                 .select('id, fecha, producto, rasos_comprados, rasos_descarte, toritos_obtenidos, quintero_id, quinteros(nombre)')
                 .eq('estado', 'abierto')
+                .is('lote_padre_id', null)
                 .order('id', {ascending: false});
             
             if (error) throw error;
@@ -79,11 +80,17 @@ const liquidaciones = {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Cargando datos...</td></tr>';
         
         try {
-            // 1. Obtener todas las ventas de este lote
+            // 1. Obtener todos los hijos del lote padre
+            const { data: hijos } = await window.supabaseClient.from('lotes_ingreso').select('id, toritos_obtenidos, producto').eq('lote_padre_id', loteId);
+            const lotesIds = [parseInt(loteId)];
+            if (hijos) lotesIds.push(...hijos.map(h => h.id));
+            this.loteActual.hijos = hijos || [];
+
+            // 2. Obtener todas las ventas de este lote y sus hijos
             const { data: ventasData, error: ventasError } = await window.supabaseClient
                 .from('ventas_detalles')
                 .select('id, producto, calibre, cantidad, precio_unitario_neto, envases(equivalencia_bulto)')
-                .eq('lote_id', loteId);
+                .in('lote_id', lotesIds);
                 
             if (ventasError) throw ventasError;
 
@@ -100,8 +107,13 @@ const liquidaciones = {
                 });
             }
             
+            let totalToritosObtenidos = this.loteActual.toritos_obtenidos || 0;
+            if (this.loteActual.hijos) {
+                this.loteActual.hijos.forEach(h => totalToritosObtenidos += (h.toritos_obtenidos || 0));
+            }
+
             const equivNativo = getEquivNativoLote(this.loteActual.producto, envases, plantilla);
-            const obtenidosToritos = this.loteActual.toritos_obtenidos * equivNativo;
+            const obtenidosToritos = totalToritosObtenidos * equivNativo;
             const disponiblesToritos = Math.max(0, obtenidosToritos - vendidasToritos);
             const disponiblesNativos = Math.round((disponiblesToritos / equivNativo) * 100) / 100;
             
@@ -131,7 +143,7 @@ const liquidaciones = {
                 costoBasePorTorito = gastosFijos.reduce((sum, g) => sum + parseFloat(g.monto_actual), 0);
             }
             
-            const gastosCalculados = costoBasePorTorito * this.loteActual.toritos_obtenidos;
+            const gastosCalculados = costoBasePorTorito * totalToritosObtenidos;
             
             // 3. Cálculos
             this.ingresosTotales = 0;
@@ -279,15 +291,20 @@ const liquidaciones = {
         btnGuardar.disabled = true;
         btnGuardar.textContent = "Guardando...";
 
+        const lotesIds = [this.loteActual.id];
+        if (this.loteActual.hijos) {
+            this.loteActual.hijos.forEach(h => lotesIds.push(h.id));
+        }
+
         try {
-            // 1. Cerrar el lote
+            // 1. Cerrar el lote y sus hijos
             const { error: updateError } = await window.supabaseClient
                 .from('lotes_ingreso')
                 .update({
                     estado: 'liquidado',
                     precio_final_pagado: precio
                 })
-                .eq('id', this.loteActual.id);
+                .in('id', lotesIds);
                 
             if (updateError) throw updateError;
 
@@ -341,6 +358,7 @@ const liquidaciones = {
                 .from('lotes_ingreso')
                 .select('id, fecha, producto, rasos_comprados, rasos_descarte, precio_final_pagado, quintero_id, quinteros(nombre)')
                 .eq('estado', 'liquidado')
+                .is('lote_padre_id', null)
                 .order('id', {ascending: false});
             
             if (error) throw error;
@@ -467,61 +485,69 @@ const liquidaciones = {
     },
 
     editLiquidacion: async function(lote_id, precio_actual, rasos_buenos) {
-        const nuevoPrecioStr = window.prompt(`Editar precio final pagado para el Lote #${lote_id}\n\nIngrese el nuevo precio por raso:`, precio_actual);
-        
-        if (nuevoPrecioStr === null) return; // Cancelado
-        
-        const nuevoPrecio = parseFloat(nuevoPrecioStr);
-        if (isNaN(nuevoPrecio) || nuevoPrecio < 0) {
-            UI.error("El precio ingresado no es válido.");
-            return;
-        }
+        UI.prompt(
+            `Ingrese el nuevo precio por raso:`, 
+            async (nuevoPrecioStr) => {
+                if (nuevoPrecioStr === null || nuevoPrecioStr.trim() === '') return;
+                
+                const nuevoPrecio = parseFloat(nuevoPrecioStr);
+                if (isNaN(nuevoPrecio) || nuevoPrecio < 0) {
+                    UI.error("El precio ingresado no es válido.");
+                    return;
+                }
 
-        if (nuevoPrecio === precio_actual) return; // No hay cambios
+                if (nuevoPrecio === precio_actual) return; // No hay cambios
 
-        try {
-            const nuevoTotal = nuevoPrecio * rasos_buenos;
+                try {
+                    const nuevoTotal = nuevoPrecio * rasos_buenos;
 
-            // 1. Actualizar el lote
-            const { error: errLote } = await window.supabaseClient.from('lotes_ingreso')
-                .update({ precio_final_pagado: nuevoPrecio })
-                .eq('id', lote_id);
-            if (errLote) throw errLote;
+                    // 1. Actualizar el lote
+                    const { error: errLote } = await window.supabaseClient.from('lotes_ingreso')
+                        .update({ precio_final_pagado: nuevoPrecio })
+                        .eq('id', lote_id);
+                    if (errLote) throw errLote;
 
-            // 2. Actualizar el movimiento de cuenta asociado
-            // Primero obtenemos el movimiento (puede haber más de uno si hubo pagos parciales, pero este sistema asume 1 movimiento de liquidación)
-            const { data: movs, error: errFindMov } = await window.supabaseClient.from('movimientos_cuenta')
-                .select('id, detalle')
-                .eq('comprobante_relacionado_id', lote_id)
-                .eq('tipo_movimiento', 'liquidacion');
-            
-            if (errFindMov) throw errFindMov;
+                    // 2. Actualizar el movimiento de cuenta asociado
+                    const { data: movs, error: errFindMov } = await window.supabaseClient.from('movimientos_cuenta')
+                        .select('id, detalle')
+                        .eq('comprobante_relacionado_id', lote_id)
+                        .eq('tipo_movimiento', 'liquidacion');
+                    
+                    if (errFindMov) throw errFindMov;
 
-            if (movs && movs.length > 0) {
-                // Actualizar el monto y el detalle del primer movimiento encontrado
-                const nuevoDetalle = `Liquidación Remesa Nº ${lote_id} (${rasos_buenos} rasos a ${formatCurrency(nuevoPrecio)})`;
-                const { error: errUpdateMov } = await window.supabaseClient.from('movimientos_cuenta')
-                    .update({ monto: nuevoTotal, detalle: nuevoDetalle })
-                    .eq('id', movs[0].id);
-                if (errUpdateMov) throw errUpdateMov;
-            }
+                    if (movs && movs.length > 0) {
+                        // Actualizar el monto y el detalle del primer movimiento encontrado
+                        const nuevoDetalle = `Liquidación Remesa Nº ${lote_id} (${rasos_buenos} rasos a ${formatCurrency(nuevoPrecio)})`;
+                        const { error: errUpdateMov } = await window.supabaseClient.from('movimientos_cuenta')
+                            .update({ monto: nuevoTotal, detalle: nuevoDetalle })
+                            .eq('id', movs[0].id);
+                        if (errUpdateMov) throw errUpdateMov;
+                    }
 
-            UI.success("Precio de liquidación actualizado.");
-            this.cargarHistorial();
+                    UI.success("Precio de liquidación actualizado.");
+                    this.cargarHistorial();
 
-        } catch (err) {
-            console.error("Error al editar liquidación:", err);
-            UI.error("Ocurrió un error al intentar editar la liquidación.");
-        }
+                } catch (err) {
+                    console.error("Error al editar liquidación:", err);
+                    UI.error("Ocurrió un error al intentar editar la liquidación.");
+                }
+            },
+            `Editar Lote #${lote_id}`,
+            precio_actual
+        );
     },
 
     deleteLiquidacion: async function(lote_id) {
         UI.confirm("¿Desea deshacer la liquidación del Lote #" + lote_id + "?\nEl lote volverá a estado 'Abierto' para que pueda volver a liquidarlo y se anulará la deuda generada en la cuenta del quintero.", async () => {
             try {
-                // 1. Revertir estado del lote a abierto
+                const { data: hijos } = await window.supabaseClient.from('lotes_ingreso').select('id').eq('lote_padre_id', lote_id);
+                const idsToCheck = [lote_id];
+                if (hijos) idsToCheck.push(...hijos.map(h => h.id));
+
+                // 1. Revertir estado del lote y sus hijos a abierto
                 const { error: errLote } = await window.supabaseClient.from('lotes_ingreso')
                     .update({ estado: 'abierto', precio_final_pagado: null })
-                    .eq('id', lote_id);
+                    .in('id', idsToCheck);
                 if (errLote) throw errLote;
 
                 // 2. Eliminar movimiento de cuenta (la deuda generada)

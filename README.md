@@ -6,47 +6,56 @@ El sistema digitaliza el flujo completo de trabajo: desde la recepción de la me
 
 ## Características Principales
 
-*   **Gestión de Lotes (Ingresos):** Registro de la entrada de mercadería, separación por descartes y conversión a bultos de venta.
-*   **Módulo de Ventas Rápido:** Interfaz orientada a dispositivos móviles (táctil) con botones rápidos preconfigurados por colores según el producto. Permite venta de múltiples lotes con prorrateo automático de gastos de flete.
-*   **Liquidaciones y Gastos por Envase:** Cálculo automático de la ganancia neta por lote aplicando gastos fijos del galpón diferenciados según el tipo de envase del producto (**Torito**, **Jaulita** o **Bandeja**).
-*   **Cuentas Corrientes Unificadas:** Sistema de balance bidireccional que maneja las deudas a favor del quintero (liquidaciones) y las deudas de los clientes (ventas), registrando entregas de dinero y cobros.
-*   **Reporte Avanzado de Ganancias:** Dashboard interactivo con gráficos de evolución diaria y distribución (Doughnut) por producto, sumado a una tabla analítica de rentabilidad y margen que destaca qué productos conviene comprar y vender.
+### 1. Gestión de Lotes y Trazabilidad
+El sistema maneja el ingreso de mercadería estructurándolo en lotes. Posee una jerarquía inteligente que permite hacer un seguimiento de los productos procesados. Si un producto es reclasificado o envasado en un formato diferente (por ejemplo, de raso a torito o jaulita), el sistema agrupa de forma automática los sublotes derivados dentro del lote principal (Lote Padre), manteniendo el inventario limpio y la trazabilidad exacta.
+
+### 2. Módulo de Ventas POS (Punto de Venta)
+Una interfaz rápida y orientada a pantallas táctiles o dispositivos móviles, ideal para el ritmo acelerado del galpón. Incluye botones preconfigurados por producto y permite cargar múltiples lotes en un mismo comprobante. Además, calcula y prorratea automáticamente los gastos logísticos o de fletes sobre la venta para obtener los valores netos exactos en tiempo real.
+
+### 3. Liquidaciones Automatizadas
+Al cerrar un lote, el sistema consolida todas las ventas del lote padre y sus derivados. Deduce los costos de galpón según los gastos configurables por tipo de envase nativo (Torito, Bandeja, Jaulita) y sugiere el precio óptimo a pagarle al productor, garantizando un margen de rentabilidad claro para el empaque.
+
+### 4. Cuentas Corrientes Unificadas
+El módulo contable bidireccional centraliza las deudas de los clientes (por compras) y las deudas con los quinteros (por liquidaciones pendientes). Registra cobros parciales o totales y entregas de efectivo, mostrando el saldo a favor o en contra de forma transparente.
+
+### 5. Analítica y Ganancias
+Un dashboard interactivo y visual construido con Chart.js provee información clave para la toma de decisiones. Calcula las utilidades puras cruzando los ingresos brutos de las ventas contra los gastos de galpón y el pago final al quintero. Genera gráficos de barras diarios y un gráfico de anillo interactivo con la distribución de ganancias, además de una tabla comparativa para determinar fácilmente qué productos son los más rentables.
 
 ## Arquitectura y Tecnologías
 
 El proyecto es una aplicación **Serverless de una sola página (SPA)** construida con:
 
 *   **Frontend:** Vanilla JavaScript (ES6+), HTML5, y CSS3.
-*   **Estilos:** Tailwind CSS (vía CDN) para un diseño responsivo, limpio y rápido.
+*   **Estilos:** Tailwind CSS (vía CDN) y CSS Nativo para un diseño moderno y responsivo.
 *   **Base de Datos / Backend:** Supabase (PostgreSQL + PostgREST API).
-*   **Gráficos:** Chart.js.
+*   **Interfaz (UI/UX):** Sistema propio de ventanas modales y alertas integradas para una experiencia fluida sin dependencias de librerías externas.
 
 ### Por qué esta arquitectura:
-Al no requerir Node.js, Webpack, ni ningún framework reactivo pesado (como React o Angular) para compilar, el sistema es ridículamente rápido y fácil de desplegar. El archivo `index.html` puede alojarse en cualquier servidor estático (como GitHub Pages, Vercel o Netlify) a costo $0.
+Al no requerir compilación mediante Node.js, Webpack, ni frameworks pesados (como React o Angular), el sistema es extremadamente ligero, rápido de ejecutar y sencillo de mantener. Puede alojarse en cualquier servidor estático (como GitHub Pages, Vercel, Netlify) o correr desde el sistema de archivos local a costo nulo.
 
 ## Estructura de Directorios
 
 ```text
 /
-├── index.html            # Estructura principal y plantillas de las vistas
-├── styles.css            # Estilos personalizados (CSS puro)
+├── index.html            # Estructura principal, vistas y modales nativos
+├── styles.css            # Estilos personalizados, animaciones y overrides
 ├── js/
-│   ├── app.js            # Enrutador principal y control del Menú
-│   ├── supabase.js       # Inicialización del cliente de BD
-│   ├── utils.js          # Funciones compartidas (formato moneda, fechas)
-│   ├── ui.js             # Gestor de Modales y Notificaciones
-│   ├── dashboard.js      # Vista de Resumen y Stock Físico
-│   ├── lotes.js          # Lógica de ingreso de mercadería
-│   ├── ventas.js         # Motor de ventas y prorrateo (Plantillas)
-│   ├── liquidaciones.js  # Cálculo de ganancias y pagos a quinteros
-│   ├── cuentas.js        # Manejo de cuentas corrientes y pagos
-│   ├── ganancias.js      # Lógica del reporte gráfico y financiero
-│   └── catalogs.js       # Mantenimiento de Quinteros, Clientes y Envases
-├── sql/                  # (Solo Desarrollo) Scripts de base de datos
+│   ├── app.js            # Enrutador principal y control de navegación
+│   ├── supabase.js       # Inicialización de BD y chequeo de conexión
+│   ├── utils.js          # Utilidades (formato de moneda, fechas, cálculos nativos)
+│   ├── ui.js             # Gestor central de notificaciones y modales
+│   ├── dashboard.js      # Resumen general de saldos y cálculo de stock consolidado
+│   ├── lotes.js          # Control de ingreso, descartes y agrupación de familias
+│   ├── ventas.js         # Motor POS, validación de stock y prorrateo logístico
+│   ├── liquidaciones.js  # Lógica de cierre de lote, deducción y fijación de precios
+│   ├── cuentas.js        # Historial contable, registro de cobros y pagos
+│   ├── ganancias.js      # Motor analítico financiero y generación de gráficos
+│   └── catalogs.js       # Configuración (Quinteros, Clientes, Gastos, Envases)
+├── sql/                  # Scripts de creación y configuración de la base de datos
 ```
 
 ## Instalación y Despliegue
 
-1. **Base de Datos:** Ejecuta el contenido de `sql/esquema_final.sql` en el SQL Editor de tu proyecto en Supabase para construir la base de datos inicial con los datos de prueba.
-2. **Conexión:** Asegúrate de que las credenciales en `js/supabase.js` coincidan con tu proyecto de Supabase.
-3. **Despliegue:** Sube la carpeta a cualquier servicio de hosting estático o abre `index.html` directamente en tu navegador web.
+1. **Base de Datos:** Ejecuta el contenido de `sql/esquema_final.sql` en el SQL Editor de tu proyecto en Supabase para crear las tablas y políticas de seguridad (RLS).
+2. **Conexión:** Edita `js/supabase.js` e ingresa la URL y la llave anónima (Anon Key) de tu proyecto de Supabase.
+3. **Despliegue:** Sube la carpeta a cualquier servicio de hosting estático o abre `index.html` en cualquier navegador web.

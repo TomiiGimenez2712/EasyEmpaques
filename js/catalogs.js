@@ -344,7 +344,7 @@ const catalogs = {
         }
     },
     init: function() {
-        console.log("Inicializando Catálogos...");
+        // Inicializando Catálogos...
         // Cargar todo (quinteros, clientes y gastos)
         this.loadQuinteros();
         this.loadClientes();

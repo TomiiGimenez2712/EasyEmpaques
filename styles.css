@@ -51,17 +51,17 @@
     @page { margin: 1cm; size: A4 portrait; }
 }
 
-/* Estilo Intercalado (Zebra) para todas las tablas, excepto la grilla de carga de ventas */
-tbody tr:not(.fila-detalle):nth-child(even) {
+/* Estilo Intercalado (Zebra) para todas las tablas, excepto la grilla de carga de ventas y tabla de lotes */
+tbody:not(#table-lotes) tr:not(.fila-detalle):nth-child(even) {
     background-color: #f9fafb !important; /* gray-50 */
 }
 
-tbody tr:not(.fila-detalle):nth-child(odd) {
+tbody:not(#table-lotes) tr:not(.fila-detalle):nth-child(odd) {
     background-color: #ffffff !important;
 }
 
 /* Efecto hover mejorado para filas (excepto grilla de carga) */
-tbody tr:not(.fila-detalle):hover {
+tbody:not(#table-lotes) tr:not(.fila-detalle):hover {
     background-color: #f3f4f6 !important; /* gray-100 */
 }
 

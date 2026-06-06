@@ -16,7 +16,7 @@ const ganancias = {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Cargando datos de ganancias...</td></tr>';
         
         try {
-            // 1. Obtener Lotes Liquidados
+            // 1. Obtener Lotes Liquidados (PADRES unicamente)
             const { data: lotesData, error: lError } = await window.supabaseClient
                 .from('lotes_ingreso')
                 .select(`
@@ -28,17 +28,29 @@ const ganancias = {
                     rasos_descarte,
                     quinteros (nombre)
                 `)
-                .eq('estado', 'liquidado');
+                .eq('estado', 'liquidado')
+                .is('lote_padre_id', null);
                 
             if (lError) throw lError;
 
             if (!lotesData || lotesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">No hay lotes liquidados registrados.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">No hay lotes liquidados registrados.</td></tr>';
                 this.renderCards(0, 0, 0);
                 return;
             }
 
             const loteIds = lotesData.map(l => l.id);
+
+            // Obtener todos los hijos de estos lotes
+            const { data: hijosData } = await window.supabaseClient
+                .from('lotes_ingreso')
+                .select('id, lote_padre_id')
+                .in('lote_padre_id', loteIds);
+            
+            const todosLosLoteIds = [...loteIds];
+            if (hijosData) {
+                hijosData.forEach(h => todosLosLoteIds.push(h.id));
+            }
 
             // 2. Obtener movimientos de cuenta (Liquidaciones) para sacar la fecha exacta de liquidación y el monto pagado
             const { data: movsData, error: mError } = await window.supabaseClient
@@ -49,13 +61,19 @@ const ganancias = {
 
             if (mError) throw mError;
 
-            // 3. Obtener todas las ventas asociadas a esos lotes para sumar Ingresos Netos
+            // 3. Obtener todas las ventas asociadas a esos lotes (padres e hijos) para sumar Ingresos Netos
             const { data: ventasData, error: vError } = await window.supabaseClient
                 .from('ventas_detalles')
                 .select('lote_id, precio_unitario_neto, cantidad')
-                .in('lote_id', loteIds);
+                .in('lote_id', todosLosLoteIds);
 
             if (vError) throw vError;
+
+            // 3.5 Obtener los gastos registrados para los lotes padre
+            const { data: gastosData, error: gError } = await window.supabaseClient
+                .from('gastos_lote')
+                .select('lote_id, monto_congelado')
+                .in('lote_id', loteIds);
 
             // 4. Mapear y calcular todo
             const hoy = new Date();
@@ -95,15 +113,27 @@ const ganancias = {
                     continue; // No entra en el filtro
                 }
 
-                // Sumar ingresos
-                const ventasLote = ventasData.filter(v => v.lote_id === lote.id);
+                // Sumar ingresos (padre e hijos)
+                const idsFamilia = [lote.id];
+                if (hijosData) {
+                    hijosData.filter(h => h.lote_padre_id === lote.id).forEach(h => idsFamilia.push(h.id));
+                }
+
+                const ventasLote = ventasData ? ventasData.filter(v => idsFamilia.includes(v.lote_id)) : [];
                 let ingresosBrutos = 0;
                 ventasLote.forEach(v => {
                     ingresosBrutos += (v.precio_unitario_neto * v.cantidad);
                 });
 
+                // Sumar gastos del lote
+                const gastosLote = gastosData ? gastosData.filter(g => g.lote_id === lote.id) : [];
+                let totalGastos = 0;
+                gastosLote.forEach(g => {
+                    totalGastos += parseFloat(g.monto_congelado || 0);
+                });
+
                 const pagadoQuintero = liquidacion.monto;
-                const gananciaEmpaque = ingresosBrutos - pagadoQuintero;
+                const gananciaEmpaque = ingresosBrutos - totalGastos - pagadoQuintero;
 
                 this.datosBase.push({
                     lote_id: lote.id,
@@ -111,6 +141,7 @@ const ganancias = {
                     producto: lote.producto,
                     quintero: lote.quinteros?.nombre || 'Desconocido',
                     ingresos: ingresosBrutos,
+                    gastos: totalGastos,
                     pagado: pagadoQuintero,
                     ganancia: gananciaEmpaque
                 });
@@ -157,6 +188,7 @@ const ganancias = {
                 </td>
                 <td class="px-4 py-3 text-gray-600" data-label="Quintero">${row.quintero}</td>
                 <td class="px-4 py-3 text-right text-gray-800 font-medium" data-label="Ingresos">${formatCurrency(row.ingresos)}</td>
+                <td class="px-4 py-3 text-right text-orange-600" data-label="Gastos">-${formatCurrency(row.gastos)}</td>
                 <td class="px-4 py-3 text-right text-red-600" data-label="Pagado">-${formatCurrency(row.pagado)}</td>
                 <td class="px-4 py-3 text-right text-green-700 font-bold bg-green-50" data-label="Ganancia">${formatCurrency(row.ganancia)}</td>
             `;
@@ -282,7 +314,7 @@ const ganancias = {
             }
             agrupado[prod].lotes += 1;
             agrupado[prod].ventas += row.ingresos;
-            agrupado[prod].costo += row.pagado;
+            agrupado[prod].costo += (row.pagado + row.gastos);
             agrupado[prod].ganancia += row.ganancia;
         });
 

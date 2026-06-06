@@ -56,6 +56,7 @@ CREATE TABLE lotes_ingreso (
     id SERIAL PRIMARY KEY,
     fecha DATE NOT NULL DEFAULT CURRENT_DATE,
     quintero_id INTEGER REFERENCES quinteros(id) ON DELETE RESTRICT,
+    lote_padre_id INTEGER REFERENCES lotes_ingreso(id) ON DELETE CASCADE,
     producto TEXT NOT NULL DEFAULT 'Sin Especificar',
     estado VARCHAR(20) DEFAULT 'abierto' CHECK (estado IN ('abierto', 'liquidado')),
     rasos_comprados INTEGER NOT NULL DEFAULT 0,
